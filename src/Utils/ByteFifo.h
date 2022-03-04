@@ -44,7 +44,6 @@ typedef struct
     uint8_t* volatile first; ///< Pointer to oldest item in queue.
     uint8_t* volatile last;  ///< Pointer used as next insert location.
 } ByteFifo;
-
 /// \brief ByteFifo constructor macro, creates empty queue with given name and
 /// capacity.
 ///        It creates memory block on stack, so it is mostly useful in tests.

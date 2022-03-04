@@ -1,6 +1,8 @@
 #ifndef BSP_UART_H
 #define BSP_UART_H
 
+#include <UartRegisters.h>
+#include <ByteFifo.h>
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -21,16 +23,28 @@ typedef enum
 {
     Uart_Parity_Even = 0,
     Uart_Parity_Odd = 1,
-    Uart_Parity_None = 4,
+    Uart_Parity_None = 4
 } Uart_Parity;
+
+typedef enum
+{
+    Uart_BaudRate_1200 = 1200,
+    Uart_BaudRate_2400 = 2400,
+    Uart_BaudRate_4800 = 4800,
+    Uart_BaudRate_9600 = 9600,
+    Uart_BaudRate_19200 = 19200,
+    Uart_BaudRate_38400 = 38400,
+    Uart_BaudRate_57600 = 57600,
+    Uart_BaudRate_115200 = 115200
+} Uart_BaudRate;
 
 typedef struct
 {
-    uint8_t isTxEnabled;
-    uint8_t isRxEnabled;
-    uint8_t isTestModeEnabled;
+    bool isTxEnabled;
+    bool isRxEnabled;
+    bool isTestModeEnabled;
     Uart_Parity parity;
-    uint32_t baudRate;
+    Uart_BaudRate baudRate;
     uint32_t baudRateClkSrc;
     uint32_t baudRateClkFreq;
 } Uart_Config;
@@ -67,10 +81,10 @@ typedef struct
 
 typedef struct
 {
-    uint8_t hasOverrunOccurred;
-    uint8_t hasFramingErrorOccurred;
-    uint8_t hasParityErrorOccurred;
-    uint8_t hasRxFifoFullErrorOccurred;
+    bool hasOverrunOccurred;
+    bool hasFramingErrorOccurred;
+    bool hasParityErrorOccurred;
+    bool hasRxFifoFullErrorOccurred;
 } Uart_ErrorFlags;
 
 typedef struct
@@ -79,9 +93,9 @@ typedef struct
     Uart_TxHandler txHandler;
     Uart_RxHandler rxHandler;
     Uart_ErrorHandler errorHandler;
-    uint32_t* txFifo;
-    uint32_t* rxFifo;
-    volatile uint32_t* reg;
+    ByteFifo* txFifo;
+    ByteFifo* rxFifo;
+    UartRegisters_t reg;
     Uart_Config config;
 } Uart;
 
@@ -106,16 +120,16 @@ void Uart_read(Uart* const uart,
                int* const errCode);
 
 void Uart_writeAsync(Uart* const uart,
-                     uint32_t* const fifo,
+                     ByteFifo* const fifo,
                      const Uart_TxHandler handler);
 
 void Uart_readAsync(Uart* const uart,
-                    uint32_t* const fifo,
+                    ByteFifo* const fifo,
                     const Uart_RxHandler handler);
 
 uint8_t Uart_isTxEmpty(const Uart* const uart);
 
-void Uart_readRxFifo(Uart* const uart, uint8_t* const fifo);
+void Uart_readRxFifo(Uart* const uart, ByteFifo* const fifo);
 
 uint32_t Uart_getTxFifoCount(Uart* const uart);
 
