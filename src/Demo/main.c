@@ -6,13 +6,15 @@
 
 #define REG_BIT(reg, n) (((reg) >> n) & 1U)
 #define REG_BYTE(reg, n) (((reg) >> (n * 4)) & 0x0FU)
-#define TIMEOUT 10000000
+#define TIMEOUT 5000000
 
 static Uart uart0;
 
 static Uart_Config config;
 
 static int* err;
+
+static uint8_t length;
 
 static inline char
 itoc(uint8_t c)
@@ -59,17 +61,29 @@ debugReg(const uint32_t reg)
     }
 }
 
-static uint8_t i;
+static void
+write(const char* text)
+{
+    int n = 0;
+    while(*(text + n) != 0) {
+        Uart_write(&uart0, *(text + n), TIMEOUT, err);
+        n++;
+        if(n > 32) {
+            return;
+        }
+    }
+}
+
 static void
 testCallback()
 {
-    ++i;
+    ++length;
 }
 
 int
 main()
 {
-    i = 0;
+    length = 0;
     Uart_init(Uart_Id_0, &uart0);
     uart0.config.isTxEnabled = 1;
     uart0.config.isRxEnabled = 1;
@@ -77,23 +91,21 @@ main()
     uart0.rxHandler.lengthCallback = testCallback;
     Uart_startup(&uart0);
     Uart_getConfig(&uart0, &config);
-    Uart_write(&uart0, '\n', TIMEOUT, err);
+    write("uart0 status: \n");
     debugAddr(((UartRegisters_t)uart0.reg)->status);
-    Uart_write(&uart0, '\n', TIMEOUT, err);
+    write("\n");
     debugReg(((UartRegisters_t)uart0.reg)->status);
-    Uart_write(&uart0, '\n', TIMEOUT, err);
-    Uart_write(&uart0, '_', TIMEOUT, err);
-    Uart_write(&uart0, '\r', TIMEOUT, err);
+    write("\n\ncounting characters (x5)\n");
+    write("type q to exit:\n_\r");
     char buf = '\0';
     do {
-        Uart_write(&uart0, itoc(i), TIMEOUT, err);
+        Uart_write(&uart0, itoc(length), TIMEOUT, err);
         Uart_write(&uart0, '\r', TIMEOUT, err);
         Uart_read(&uart0, (uint8_t*)&buf, TIMEOUT, err);
     } while(buf != 'q' && *err == 0);
     if(*err != 0) {
         Uart_write(&uart0, '!', TIMEOUT, err);
     }
-    Uart_write(&uart0, '\n', TIMEOUT, err);
     Uart_shutdown(&uart0);
     Uart_write(&uart0, 'x', TIMEOUT, err);
     return 0;

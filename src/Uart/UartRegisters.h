@@ -1,7 +1,6 @@
 #ifndef BSP_UARTREGS_H
 #define BSP_UARTREGS_H
 
-#include "SystemConfig.h"
 #include <stdint.h>
 
 // clang-format off

@@ -1,5 +1,6 @@
 #include "Uart.h"
 #include "UartRegisters.h"
+#include "ByteFifo.h"
 #include "SystemConfig.h"
 #include <rtems.h>
 

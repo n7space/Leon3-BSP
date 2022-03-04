@@ -2,8 +2,7 @@
 #define BSP_UART_H
 
 #include <stdint.h>
-
-#ifndef RTEMS_SIS
+#include <stdbool.h>
 
 #define UART_INTERFACES_MAX 6
 
@@ -35,25 +34,6 @@ typedef struct
     uint32_t baudRateClkSrc;
     uint32_t baudRateClkFreq;
 } Uart_Config;
-
-#else // RTEMS_SIS
-
-#define UART_INTERFACES_MAX 1
-
-typedef enum
-{
-    Uart_Id_0 = 0,
-    Uart_Id_Max = UART_INTERFACES_MAX
-} Uart_Id;
-
-typedef struct
-{
-    uint8_t isTxEnabled;
-    uint8_t isRxEnabled;
-    uint8_t isTestModeEnabled;
-} Uart_Config;
-
-#endif // RTEMS_SIS
 
 typedef void (*UartTxEndCallback)(void* arg);
 
