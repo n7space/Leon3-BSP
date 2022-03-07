@@ -1,20 +1,26 @@
 #include "Uart.h"
 #include "UartRegisters.h"
+#include "ByteFifo.h"
 #include "SystemConfig.h"
 #include "Startup_Leon3.h"
 #include <rtems.h>
 
 #define REG_BIT(reg, n) (((reg) >> n) & 1U)
 #define REG_BYTE(reg, n) (((reg) >> (n * 4)) & 0x0FU)
-#define TIMEOUT 5000000
+#define TIMEOUT 4000000
+#define FIFO_SIZE 256
 
 static Uart uart0;
 
 static Uart_Config config;
 
-static int* err;
+static int err;
 
 static uint8_t length;
+
+BYTE_FIFO_CREATE(rxByteFifo, FIFO_SIZE);
+
+BYTE_FIFO_CREATE(txByteFifo, FIFO_SIZE);
 
 static inline char
 itoc(uint8_t c)
@@ -47,7 +53,7 @@ debugAddr(const uint32_t addr)
         buff[9 - n] = itoc(byte);
     }
     for(unsigned char n = 0; n < 10; n++) {
-        Uart_write(&uart0, buff[n], TIMEOUT, err);
+        Uart_write(&uart0, buff[n], TIMEOUT, &err);
     }
 }
 
@@ -57,7 +63,7 @@ debugReg(const uint32_t reg)
     for(char n = 0; n < 32; n++) {
         uint8_t byte = 0;
         byte += REG_BIT(reg, n);
-        Uart_write(&uart0, '0' + byte, TIMEOUT, err);
+        Uart_write(&uart0, '0' + byte, TIMEOUT, &err);
     }
 }
 
@@ -66,7 +72,7 @@ write(const char* text)
 {
     int n = 0;
     while(*(text + n) != 0) {
-        Uart_write(&uart0, *(text + n), TIMEOUT, err);
+        Uart_write(&uart0, *(text + n), TIMEOUT, &err);
         n++;
         if(n > 32) {
             return;
@@ -80,33 +86,70 @@ testCallback()
     ++length;
 }
 
+static void
+testSync(Uart* uart)
+{
+    Uart_startup(uart);
+    Uart_getConfig(uart, &config);
+    uart->rxHandler.targetLength = 5;
+    uart->rxHandler.lengthCallback = testCallback;
+    write("uart status: \n");
+    debugAddr(uart->reg->status);
+    write("\n");
+    debugReg(uart->reg->status);
+    write("\n\ncounting characters (x5)\n");
+    write("type q to end:\n_\r");
+    char buf = '\0';
+    do {
+        Uart_write(uart, itoc(length), TIMEOUT, &err);
+        Uart_write(uart, '\r', TIMEOUT, &err);
+        Uart_read(uart, (uint8_t*)&buf, TIMEOUT, &err);
+    } while(buf != 'q' && err == 0);
+    if(err != 0) {
+        Uart_write(uart, '!', TIMEOUT, &err);
+        Uart_write(uart, err, TIMEOUT, &err);
+    }
+    Uart_write(uart, '\n', TIMEOUT, &err);
+    Uart_shutdown(uart);
+}
+
+static void
+testAsync(Uart* uart)
+{
+    ByteFifo_clear(&txByteFifo);
+    ByteFifo_clear(&rxByteFifo);
+    Uart_startup(uart);
+    Uart_getConfig(uart, &config);
+    const char text1[] = "\ntxByteFifo contains this text\n";
+    for(int i = 0; i < (int)sizeof(text1) && i < FIFO_SIZE; i++) {
+        ByteFifo_push(&txByteFifo, text1[i]);
+    }
+    Uart_writeAsync(uart, &txByteFifo, uart->txHandler);
+    while(ByteFifo_isEmpty(&txByteFifo) == 0);
+    const char text2[] = "now 32 chars will by read by Uart:\n";
+    for(int i = 0; i < (int)sizeof(text2) && i < FIFO_SIZE; i++) {
+        ByteFifo_push(&txByteFifo, text2[i]);
+    }
+    Uart_writeAsync(uart, &txByteFifo, uart->txHandler);
+    while(ByteFifo_isEmpty(&txByteFifo) == 0);
+    do {
+        Uart_readAsync(uart, &rxByteFifo, uart->rxHandler);
+    } while(Uart_getRxFifoCount(uart) < 32);
+    ByteFifo_push(&rxByteFifo, '\n');
+    Uart_writeAsync(uart, &rxByteFifo, uart->txHandler);
+    while(ByteFifo_isEmpty(&rxByteFifo) == 0);
+    Uart_shutdown(uart);
+}
+
 int
 main()
 {
+    err = 0;
     length = 0;
     Uart_init(Uart_Id_0, &uart0);
     uart0.config.isTxEnabled = 1;
     uart0.config.isRxEnabled = 1;
-    uart0.rxHandler.targetLength = 5;
-    uart0.rxHandler.lengthCallback = testCallback;
-    Uart_startup(&uart0);
-    Uart_getConfig(&uart0, &config);
-    write("uart0 status: \n");
-    debugAddr(((UartRegisters_t)uart0.reg)->status);
-    write("\n");
-    debugReg(((UartRegisters_t)uart0.reg)->status);
-    write("\n\ncounting characters (x5)\n");
-    write("type q to exit:\n_\r");
-    char buf = '\0';
-    do {
-        Uart_write(&uart0, itoc(length), TIMEOUT, err);
-        Uart_write(&uart0, '\r', TIMEOUT, err);
-        Uart_read(&uart0, (uint8_t*)&buf, TIMEOUT, err);
-    } while(buf != 'q' && *err == 0);
-    if(*err != 0) {
-        Uart_write(&uart0, '!', TIMEOUT, err);
-    }
-    Uart_shutdown(&uart0);
-    Uart_write(&uart0, 'x', TIMEOUT, err);
+    testSync(&uart0);
+    testAsync(&uart0);
     return 0;
 }

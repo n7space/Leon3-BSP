@@ -5,23 +5,23 @@
 
 typedef enum
 {
-    Uart_address_0 = 0x80000100U,
-    Uart_address_1 = 0x80100100U,
-    Uart_address_2 = 0x80100200U,
-    Uart_address_3 = 0x80100300U,
-    Uart_address_4 = 0x80100400U,
-    Uart_address_5 = 0x80100500U,
+    Uart0_address = 0x80000100U,
+    Uart1_address = 0x80100100U,
+    Uart2_address = 0x80100200U,
+    Uart3_address = 0x80100300U,
+    Uart4_address = 0x80100400U,
+    Uart5_address = 0x80100500U,
     Error_address = 0xFFFFFFFFU
 } Uart_address;
 
 typedef enum
 {
-    Uart_irqNum_0 = 2,
-    Uart_irqNum_1 = 17,
-    Uart_irqNum_2 = 18,
-    Uart_irqNum_3 = 19,
-    Uart_irqNum_4 = 20,
-    Uart_irqNum_5 = 21,
+    Uart0_irqNum = 2,
+    Uart1_irqNum = 17,
+    Uart2_irqNum = 18,
+    Uart3_irqNum = 19,
+    Uart4_irqNum = 20,
+    Uart5_irqNum = 21,
     Error_irqNum = 0xFFU
 } Uart_irqNum;
 
@@ -37,7 +37,6 @@ typedef volatile struct UartRegisters
 // clang-format off
 
 #define UART_DATA_OFFSET    0x00U
-#define UART_DATA_MASK      0xFFU
 
 #define UART_STATUS_OFFSET  0x04U
 #define UART_STATUS_RCNT    0xFC000000U  // Receiver FIFO count
@@ -68,10 +67,8 @@ typedef volatile struct UartRegisters
 #define UART_CONTROL_RE     0x1U        // Receiver enable
 
 #define UART_CLKSCL_OFFSET  0x0CU
-#define UART_CLKSCL_MASK    0x0FFFU
 
 #define UART_FIFO_OFFSET    0x10U
-#define UART_FIFO_MASK      0xFFU
 
 // clang-format on
 

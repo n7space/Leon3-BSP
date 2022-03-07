@@ -23,14 +23,14 @@
 
 #include "ByteFifo.h"
 
-#include <assert.h>
-
 void
 ByteFifo_init(ByteFifo* const fifo,
               uint8_t* const memoryBlock,
               const size_t memoryBlockSize)
 {
-    assert(memoryBlockSize > 0u);
+    if(memoryBlockSize == 0) {
+        return;
+    }
 
     fifo->begin = memoryBlock;
     fifo->end = memoryBlock + memoryBlockSize;
@@ -43,7 +43,9 @@ ByteFifo_initFromBytes(ByteFifo* const fifo,
                        uint8_t* const memoryBlock,
                        const size_t memoryBlockSize)
 {
-    assert(memoryBlockSize > 0u);
+    if(memoryBlockSize == 0) {
+        return;
+    }
 
     fifo->begin = memoryBlock;
     fifo->end = memoryBlock + memoryBlockSize;

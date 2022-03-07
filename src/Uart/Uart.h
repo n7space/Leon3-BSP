@@ -6,8 +6,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define UART_INTERFACES_MAX 6
-
 typedef enum
 {
     Uart_Id_0 = 0,
@@ -16,26 +14,33 @@ typedef enum
     Uart_Id_3 = 3,
     Uart_Id_4 = 4,
     Uart_Id_5 = 5,
-    Uart_Id_Max = UART_INTERFACES_MAX
+    Error_Id = 6
 } Uart_Id;
 
 typedef enum
 {
     Uart_Parity_Even = 0,
     Uart_Parity_Odd = 1,
-    Uart_Parity_None = 4
+    Uart_Parity_None = 4,
+    Error_Parity = 9
 } Uart_Parity;
 
 typedef enum
 {
+    Uart_BaudRate_300 = 300,
+    Uart_BaudRate_600 = 600,
     Uart_BaudRate_1200 = 1200,
+    Uart_BaudRate_1800 = 1800,
     Uart_BaudRate_2400 = 2400,
     Uart_BaudRate_4800 = 4800,
     Uart_BaudRate_9600 = 9600,
     Uart_BaudRate_19200 = 19200,
+    Uart_BaudRate_28800 = 28800,
     Uart_BaudRate_38400 = 38400,
     Uart_BaudRate_57600 = 57600,
-    Uart_BaudRate_115200 = 115200
+    Uart_BaudRate_576800 = 76800,
+    Uart_BaudRate_115200 = 115200,
+    Error_BaudRate = 0
 } Uart_BaudRate;
 
 typedef struct
@@ -127,9 +132,9 @@ void Uart_readAsync(Uart* const uart,
                     ByteFifo* const fifo,
                     const Uart_RxHandler handler);
 
-uint8_t Uart_isTxEmpty(const Uart* const uart);
+bool Uart_isTxEmpty(const Uart* const uart);
 
-void Uart_readRxFifo(Uart* const uart, ByteFifo* const fifo);
+bool Uart_isRxEmpty(const Uart* const uart);
 
 uint32_t Uart_getTxFifoCount(Uart* const uart);
 
