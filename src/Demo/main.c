@@ -1,3 +1,28 @@
+/**@file
+ * This file is part of the Leon3 BSP for the Test Environment.
+ *
+ * @copyright 2022-2023 N7 Space Sp. z o.o.
+ *
+ * Test Environment was developed under a programme of,
+ * and funded by, the European Space Agency (the "ESA").
+ *
+ *
+ * Licensed under the ESA Public License (ESA-PL) Permissive,
+ * Version 2.3 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://essr.esa.int/license/list
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/// \brief Example program for UART interface
+
 #include "Uart.h"
 #include "UartRegisters.h"
 #include "ByteFifo.h"
@@ -126,7 +151,7 @@ testAsync(Uart* uart)
     }
     Uart_writeAsync(uart, &txByteFifo, uart->txHandler);
     while(ByteFifo_isEmpty(&txByteFifo) == 0);
-    const char text2[] = "now 32 chars will by read by Uart:\n";
+    const char text2[] = "now 32 chars will by read via Uart:\n";
     for(int i = 0; i < (int)sizeof(text2) && i < FIFO_SIZE; i++) {
         ByteFifo_push(&txByteFifo, text2[i]);
     }
@@ -153,3 +178,5 @@ main()
     testAsync(&uart0);
     return 0;
 }
+
+/** @} */
