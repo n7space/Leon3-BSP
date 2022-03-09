@@ -43,15 +43,19 @@ $(BUILDDIR):
 
 $(TEST)$(EXEEXT): $(BUILDDIR) $(PROJ_OBJS)
 	$(CCLINK) $(PROJ_OBJS) $(LDFLAGS) -o $@
+	$(MAKE) -C $(SIS_DIR) all
 
 $(BUILDDIR)/%.o: %.c | $(BUILDDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 run: $(TEST)$(EXEEXT)
+	$(MAKE) -C $(SIS_DIR) all
 	$(SIS_DIR)/sis -leon3 -d 10 -freq 100 -m 4 -r -v $<
 
 gdb: $(TEST)$(EXEEXT)
+	$(MAKE) -C $(SIS_DIR) all
 	$(SIS_DIR)/sis -leon3 -gdb -port 1234 -d 10 -freq 100 -m 4 -r -v $<
 
 clean:
+	$(MAKE) -C $(SIS_DIR) clean
 	rm -rf $(BUILDDIR)
