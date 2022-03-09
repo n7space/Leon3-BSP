@@ -1,37 +1,72 @@
+/**@file
+ * This file is part of the Leon3 BSP for the Test Environment.
+ *
+ * @copyright 2022-2023 N7 Space Sp. z o.o.
+ *
+ * Test Environment was developed under a programme of,
+ * and funded by, the European Space Agency (the "ESA").
+ *
+ *
+ * Licensed under the ESA Public License (ESA-PL) Permissive,
+ * Version 2.3 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://essr.esa.int/license/list
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/// \brief Uart hardware driver register addresses and datatypes.
+
+/**
+ * @defgroup Uart Uart
+ * @ingroup Bsp
+ * @{
+ */
+
 #ifndef BSP_UARTREGS_H
 #define BSP_UARTREGS_H
 
 #include <stdint.h>
 
+/// \brief Structure representing UART memory addresses.
 typedef enum
 {
-    Uart0_address = 0x80000100U,
-    Uart1_address = 0x80100100U,
-    Uart2_address = 0x80100200U,
-    Uart3_address = 0x80100300U,
-    Uart4_address = 0x80100400U,
-    Uart5_address = 0x80100500U,
-    Error_address = 0xFFFFFFFFU
+    Uart0_address = 0x80000100U, ///< UART0.
+    Uart1_address = 0x80100100U, ///< UART1.
+    Uart2_address = 0x80100200U, ///< UART2.
+    Uart3_address = 0x80100300U, ///< UART3.
+    Uart4_address = 0x80100400U, ///< UART4.
+    Uart5_address = 0x80100500U, ///< UART5.
+    Error_address = 0xFFFFFFFFU  ///< Error value.
 } Uart_address;
 
+/// \brief Structure representing UART interrupt vector numbers.
 typedef enum
 {
-    Uart0_irqNum = 2,
-    Uart1_irqNum = 17,
-    Uart2_irqNum = 18,
-    Uart3_irqNum = 19,
-    Uart4_irqNum = 20,
-    Uart5_irqNum = 21,
-    Error_irqNum = 0xFFU
+    Uart0_irqNum = 2,    ///< UART0 IRQ.
+    Uart1_irqNum = 17,   ///< UART1 IRQ.
+    Uart2_irqNum = 18,   ///< UART2 IRQ.
+    Uart3_irqNum = 19,   ///< UART3 IRQ.
+    Uart4_irqNum = 20,   ///< UART4 IRQ.
+    Uart5_irqNum = 21,   ///< UART5 IRQ.
+    Error_irqNum = 0xFFU ///< Error value.
 } Uart_irqNum;
 
+/// \brief Structure representing UART control and status registers (Big
+///        Endian).
 typedef volatile struct UartRegisters
 {
-    uint32_t data;
-    uint32_t status;
-    uint32_t control;
-    uint32_t clkscl;
-    uint32_t fifo;
+    uint32_t data;    ///< Byte of data in hardware Rx/Tx FIFO.
+    uint32_t status;  ///< 32-bit status register.
+    uint32_t control; ///< 32-bit control register.
+    uint32_t clkscl;  ///< 12-bit clock scaler reload value.
+    uint32_t debug;   ///< Byte of data in hardware Rx/Tx FIFO debug register.
 } * UartRegisters_t;
 
 // clang-format off
@@ -73,3 +108,5 @@ typedef volatile struct UartRegisters
 // clang-format on
 
 #endif
+
+/** @} */

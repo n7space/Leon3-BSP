@@ -1,3 +1,28 @@
+/**@file
+ * This file is part of the Leon3 BSP for the Test Environment.
+ *
+ * @copyright 2022-2023 N7 Space Sp. z o.o.
+ *
+ * Test Environment was developed under a programme of,
+ * and funded by, the European Space Agency (the "ESA").
+ *
+ *
+ * Licensed under the ESA Public License (ESA-PL) Permissive,
+ * Version 2.3 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://essr.esa.int/license/list
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/// \brief Uart hardware driver implementation.
+
 #include "Uart.h"
 #include "UartRegisters.h"
 #include "ByteFifo.h"
@@ -61,7 +86,7 @@ static inline Uart_BaudRate
 getBaudRate(const Uart* const uart)
 {
     uint32_t freq = rtems_clock_get_ticks_per_second();
-    uint32_t baud = freq / (8 * (uart->reg->clkscl + 1));
+    uint32_t baud = freq / (8 * ((uart->reg->clkscl << 8) + 1));
     switch(baud) {
         case 300:
         case 600:
@@ -230,7 +255,7 @@ Uart_init(Uart_Id id, Uart* const uart)
     rtems_interrupt_clear(irqNumber(uart->id));
 }
 
-void
+bool
 Uart_write(Uart* const uart,
            const uint8_t data,
            uint32_t const timeoutLimit,
@@ -239,19 +264,21 @@ Uart_write(Uart* const uart,
     uint32_t timeout = timeoutLimit;
     if(ByteFifo_isFull(uart->txFifo) == 1) {
         *errCode = UART_ERROR_CODE_TX_FIFO_FULL;
-        return;
+        return 0;
     }
     ByteFifo_push(uart->txFifo, data);
     rtems_interrupt_raise(irqNumber(uart->id));
     while((timeoutLimit == 0) || timeout-- > 0) {
         if(ByteFifo_isEmpty(uart->txFifo) == 1) {
-            return;
+            return 1;
         }
     }
+    ByteFifo_clear(uart->txFifo);
     *errCode = UART_ERROR_CODE_TIMEOUT;
+    return 0;
 }
 
-void
+bool
 Uart_read(Uart* const uart,
           uint8_t* data,
           uint32_t const timeoutLimit,
@@ -263,15 +290,17 @@ Uart_read(Uart* const uart,
     do {
         if(errorFlags[uart->id].hasRxFifoFullErrorOccurred == 1) {
             *errCode = UART_ERROR_CODE_RX_FIFO_FULL;
-            return;
+            return 0;
         }
         if(ByteFifo_isEmpty(uart->rxFifo) == 0) {
             ByteFifo_pull(uart->rxFifo, &byte);
             *data = byte;
-            return;
+            return 1;
         }
     } while((timeoutLimit == 0) || timeout-- > 0);
+    ByteFifo_clear(uart->rxFifo);
     *errCode = UART_ERROR_CODE_TIMEOUT;
+    return 0;
 }
 
 void
@@ -351,9 +380,11 @@ Uart_handleInterrupt(void* arg)
     if((uart->reg->control & UART_CONTROL_TE) != 0
        && (uart->reg->status & UART_STATUS_TE) != 0) {
         if(ByteFifo_isEmpty(uart->txFifo) == 0) {
-            uart->txHandler.callback(uart->txHandler.arg);
             ByteFifo_pull(uart->txFifo, &buf);
             uart->reg->data = buf;
+            if(ByteFifo_isEmpty(uart->txFifo) == 1) {
+                uart->txHandler.callback(uart->txHandler.arg);
+            }
         }
     }
 }
@@ -366,7 +397,7 @@ Uart_registerErrorHandler(Uart* const uart, const Uart_ErrorHandler handler)
     rtems_interrupt_vector_enable(irqNumber(uart->id));
 }
 
-inline uint8_t
+inline bool
 Uart_getLinkErrors(uint32_t statusRegister, Uart_ErrorFlags* errFlags)
 {
     if((statusRegister & UART_STATUS_OV) != 0) {
