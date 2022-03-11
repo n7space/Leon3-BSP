@@ -1,19 +1,23 @@
 RTEMS_API = 6
 RTEMS_CPU = sparc
 RTEMS_BSP = gr712rc-qual-only
-
 RTEMS_ROOT = /opt/rtems-6-sparc-gr712rc-smp-3
-PKG_CONFIG = $(RTEMS_ROOT)/lib/pkgconfig/$(RTEMS_CPU)-rtems$(RTEMS_API)-$(RTEMS_BSP).pc
-BUILDDIR = build
 
-SIS_DIR=sis
+export SIS_NAME = sis
+export SIS_VERSION = 2.29
 
-SRC = $(wildcard src/**/*.c)
-INCL = src/ $(sort $(dir $(wildcard src/**/*.h)))
+export PKG_CONFIG = $(RTEMS_ROOT)/lib/pkgconfig/$(RTEMS_CPU)-rtems$(RTEMS_API)-$(RTEMS_BSP).pc
+export SIS_DIR = sis
+export SRC_DIR = src
+export BUILD_DIR = build
+
+SRC = $(wildcard $(SRC_DIR)/**/*.c)
+INCL = $(SRC_DIR)/ $(sort $(dir $(wildcard $(SRC_DIR)/**/*.h)))
+PROJ_OBJS = $(addprefix $(BUILD_DIR)/,$(patsubst %.c,%.o,$(SRC)))
 
 DEPFLAGS = -MT $@ -MD -MP -MF $(basename $@).d
 WARNFLAGS = -Wall -Wextra
-OPTFLAGS = -g -O0 -ffunction-sections -fdata-sections
+OPTFLAGS = -Os -ffunction-sections -fdata-sections
 ABI_FLAGS = $(shell pkg-config --cflags $(PKG_CONFIG))
 EXEEXT = .exe
 
@@ -33,29 +37,46 @@ export RANLIB = $(RTEMS_ROOT)/sparc-rtems6/bin/ranlib
 export SIZE = $(RTEMS_CPU)-rtems$(RTEMS_API)-size
 export STRIP = $(RTEMS_ROOT)/sparc-rtems6/bin/strip
 
-TEST = $(BUILDDIR)/test
-PROJ_OBJS = $(addprefix $(BUILDDIR)/,$(patsubst %.c,%.o,$(SRC)))
+DEMO = $(BUILD_DIR)/demo
+DEMO_DIR = demo/
+DEMO_OBJ = $(DEMO_DIR)/main.o
 
-all: $(TEST)$(EXEEXT)
+TEST = $(BUILD_DIR)/test
+TEST_DIR = test/
+TESTS = $(TEST_DIR)/main.c $(wildcard $(TEST_DIR)/**/*.c)
+TEST_OBJS = $(patsubst %.c,%.o,$(TESTS))
 
-$(BUILDDIR):
-	mkdir -p $(addprefix $(BUILDDIR)/,$(sort $(dir $(wildcard src/**/*))))
+all: $(BUILD_DIR)
 
-$(TEST)$(EXEEXT): $(BUILDDIR) $(PROJ_OBJS)
-	$(CCLINK) $(PROJ_OBJS) $(LDFLAGS) -o $@
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)/$(SIS_DIR)
 	$(MAKE) -C $(SIS_DIR) all
+	mkdir -p $(addprefix $(BUILD_DIR)/,$(sort $(dir $(wildcard $(SRC_DIR)/**/*))))
+	$(MAKE) -C $(SRC_DIR) all
 
-$(BUILDDIR)/%.o: %.c | $(BUILDDIR)
-	$(CC) $(CFLAGS) -c $< -o $@
+$(DEMO)$(EXEEXT): $(BUILD_DIR)
+	$(MAKE) -C $(DEMO_DIR)
+	$(CCLINK) $(PROJ_OBJS) $(DEMO_OBJ) $(LDFLAGS) -o $@
 
-run: $(TEST)$(EXEEXT)
-	$(MAKE) -C $(SIS_DIR) all
-	$(SIS_DIR)/sis -leon3 -d 10 -freq 100 -m 4 -r -v $<
+$(TEST)$(EXEEXT): $(BUILD_DIR)
+	$(MAKE) -C $(TEST_DIR) all
+	$(CCLINK) $(PROJ_OBJS) $(TEST_OBJS) $(LDFLAGS) -I$(TEST_DIR) -o $@
+
+test: $(TEST)$(EXEEXT)
+	$(BUILD_DIR)/$(SIS_NAME)-$(SIS_VERSION) -leon3 -d 10 -freq 100 -m 4 -r -v $<
 
 gdb: $(TEST)$(EXEEXT)
-	$(MAKE) -C $(SIS_DIR) all
-	$(SIS_DIR)/sis -leon3 -gdb -port 1234 -d 10 -freq 100 -m 4 -r -v $<
+	$(BUILD_DIR)/$(SIS_NAME)-$(SIS_VERSION) -leon3 -gdb -port 1234 -d 10 -freq 100 -m 4 -r -v $<
+
+demo: $(DEMO)$(EXEEXT)
+	$(BUILD_DIR)/$(SIS_NAME)-$(SIS_VERSION) -leon3 -d 10 -freq 100 -m 4 -r -v $<
 
 clean:
-	$(MAKE) -C $(SIS_DIR) clean
-	rm -rf $(BUILDDIR)
+	$(MAKE) -C $(SRC_DIR) clean
+	$(MAKE) -C $(TEST_DIR) clean
+	$(MAKE) -C $(DEMO_DIR) clean
+	rm -rf $(BUILD_DIR)
+
+.PHONY: test gdb demo clean
+
+.DEFAULT_GOAL := all

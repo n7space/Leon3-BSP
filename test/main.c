@@ -32,7 +32,7 @@
 
 #define REG_BIT(reg, n) (((reg) >> n) & 1U)
 #define REG_BYTE(reg, n) (((reg) >> (n * 4)) & 0x0FU)
-#define TIMEOUT 4000000
+#define TIMEOUT 0
 #define FIFO_SIZE 256
 
 static Uart uart0;
@@ -114,6 +114,8 @@ testCallback()
 static void
 testSync(Uart* uart)
 {
+    err = 0;
+    length = 0;
     Uart_startup(uart);
     Uart_getConfig(uart, &config);
     uart->rxHandler.targetLength = 5;
@@ -132,7 +134,7 @@ testSync(Uart* uart)
     } while(buf != 'q' && err == 0);
     if(err != 0) {
         Uart_write(uart, '!', TIMEOUT, &err);
-        Uart_write(uart, err, TIMEOUT, &err);
+        Uart_write(uart, itoc(err), TIMEOUT, &err);
     }
     Uart_write(uart, '\n', TIMEOUT, &err);
     Uart_shutdown(uart);
@@ -169,8 +171,6 @@ testAsync(Uart* uart)
 int
 main()
 {
-    err = 0;
-    length = 0;
     Uart_init(Uart_Id_0, &uart0);
     uart0.config.isTxEnabled = 1;
     uart0.config.isRxEnabled = 1;
