@@ -1,7 +1,7 @@
 /**@file
  * This file is part of the Leon3 BSP for the Test Environment.
  *
- * @copyright 2022-2023 N7 Space Sp. z o.o.
+ * @copyright 2022 N7 Space Sp. z o.o.
  *
  * Test Environment was developed under a programme of,
  * and funded by, the European Space Agency (the "ESA").

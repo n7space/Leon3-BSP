@@ -11,8 +11,8 @@ export SIS_DIR = sis
 export SRC_DIR = src
 export BUILD_DIR = build
 
-SRC = $(wildcard $(SRC_DIR)/**/*.c)
-INCL = $(SRC_DIR)/ $(sort $(dir $(wildcard $(SRC_DIR)/**/*.h)))
+SRC = $(wildcard $(SRC_DIR)/*/*.c)
+INCL = $(SRC_DIR)/ $(sort $(dir $(wildcard $(SRC_DIR)/*/*.h)))
 PROJ_OBJS = $(addprefix $(BUILD_DIR)/,$(patsubst %.c,%.o,$(SRC)))
 
 DEPFLAGS = -MT $@ -MD -MP -MF $(basename $@).d
@@ -38,12 +38,13 @@ export SIZE = $(RTEMS_CPU)-rtems$(RTEMS_API)-size
 export STRIP = $(RTEMS_ROOT)/sparc-rtems6/bin/strip
 
 DEMO = $(BUILD_DIR)/demo
-DEMO_DIR = demo/
+DEMO_DIR = ./demo
 DEMO_OBJ = $(DEMO_DIR)/main.o
 
 TEST = $(BUILD_DIR)/test
-TEST_DIR = test/
-TESTS = $(TEST_DIR)/main.c $(wildcard $(TEST_DIR)/**/*.c)
+TEST_DIR = ./test
+TESTS = $(TEST_DIR)/main.c $(wildcard $(TEST_DIR)/*/*/*.c)
+TEST_INCL = $(TEST_DIR)/ $(sort $(dir $(wildcard $(TEST_DIR)/*/*/*.h)))
 TEST_OBJS = $(patsubst %.c,%.o,$(TESTS))
 
 all: $(BUILD_DIR)
@@ -51,7 +52,7 @@ all: $(BUILD_DIR)
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)/$(SIS_DIR)
 	$(MAKE) -C $(SIS_DIR) all
-	mkdir -p $(addprefix $(BUILD_DIR)/,$(sort $(dir $(wildcard $(SRC_DIR)/**/*))))
+	mkdir -p $(addprefix $(BUILD_DIR)/,$(sort $(dir $(wildcard $(SRC_DIR)/*/*))))
 	$(MAKE) -C $(SRC_DIR) all
 
 $(DEMO)$(EXEEXT): $(BUILD_DIR)
@@ -60,7 +61,7 @@ $(DEMO)$(EXEEXT): $(BUILD_DIR)
 
 $(TEST)$(EXEEXT): $(BUILD_DIR)
 	$(MAKE) -C $(TEST_DIR) all
-	$(CCLINK) $(PROJ_OBJS) $(TEST_OBJS) $(LDFLAGS) -I$(TEST_DIR) -o $@
+	$(CCLINK) $(PROJ_OBJS) $(TEST_OBJS) $(LDFLAGS) $(addprefix -I,$(TEST_INCL)) -o $@
 
 test: $(TEST)$(EXEEXT)
 	$(BUILD_DIR)/$(SIS_NAME)-$(SIS_VERSION) -leon3 -d 10 -freq 100 -m 4 -r -v $<

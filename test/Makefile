@@ -1,6 +1,6 @@
 BUILD_DIR = ../build
 SRC_DIR = ../src
-FUNCTION_TESTS_DIR = function_tests/
+FUNCTION_TESTS_DIR = ./function_tests
 FUNCTION_TEST_INC = $(sort $(dir $(wildcard $(FUNCTION_TESTS_DIR)/**/*.h)))
 FUNCTION_TEST_SRC = main.c $(wildcard $(FUNCTION_TESTS_DIR)/**/*.c)
 FUNCTION_TESTS = $(patsubst %.c,%.o,$(FUNCTION_TEST_SRC))

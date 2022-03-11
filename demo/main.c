@@ -1,7 +1,7 @@
 /**@file
  * This file is part of the Leon3 BSP for the Test Environment.
  *
- * @copyright 2022-2023 N7 Space Sp. z o.o.
+ * @copyright 2022 N7 Space Sp. z o.o.
  *
  * Test Environment was developed under a programme of,
  * and funded by, the European Space Agency (the "ESA").
@@ -24,12 +24,15 @@
 /// \brief Example application
 
 #include "Startup_Leon3.h"
+#include "SystemConfig.h"
 #include <rtems.h>
+#include <rtems/confdefs.h>
 
-int
-main()
+rtems_task
+Init(rtems_task_argument arg)
 {
-    return 0;
+    (void)arg;
+    rtems_fatal(RTEMS_FATAL_SOURCE_EXIT, 0);
 }
 
 /** @} */
