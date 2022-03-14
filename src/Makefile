@@ -1,20 +1,28 @@
+include ../definitions.mk
+
+SRC_DIR = src
 BUILD_DIR=../build
+
 SRC = $(wildcard ./**/*.c)
 INCL = ./ $(sort $(dir $(wildcard ./**/*.h)))
-PROJ_OBJS = $(addprefix $(BUILD_DIR)/src/,$(patsubst %.c,%.o,$(SRC)))
+PROJ_OBJS = $(addprefix $(BUILD_DIR)/$(SRC_DIR)/,$(patsubst %.c,%.o,$(SRC)))
 
-DEPFLAGS = -MT $@ -MD -MP -MF $(basename $@).d
-WARNFLAGS = -Wall -Wextra
-OPTFLAGS = -Os -ffunction-sections -fdata-sections
-ABI_FLAGS = $(shell pkg-config --cflags $(PKG_CONFIG))
+CFLAGS = -g $(DEPFLAGS) $(WARNFLAGS) $(ABI_FLAGS) $(OPTFLAGS) $(addprefix -I,$(INCL)) -DRTEMS_API_$(RTEMS_API) -DRTEMS_SIS
+CCLINK = $(CC) $(CFLAGS) -Wl,-Map,$(basename $@).map
 
-LDFLAGS = $(shell pkg-config --libs $(PKG_CONFIG))
-CFLAGS = $(DEPFLAGS) $(WARNFLAGS) $(ABI_FLAGS) $(OPTFLAGS) $(addprefix -I,$(INCL)) -DRTEMS_API_$(RTEMS_API) -DRTEMS_SIS
+all: $(BUILD_DIR)/libUART.a
 
-all: $(PROJ_OBJS)
+$(BUILD_DIR):
+	mkdir -p $(addprefix $(BUILD_DIR)/$(SRC_DIR)/,$(sort $(dir $(wildcard ./*/*))))
+
+libUART.a: $(BUILD_DIR) $(PROJ_OBJS)
+	$(AR) -crsv $(BUILD_DIR)/$@ $(PROJ_OBJS)
 
 $(BUILD_DIR)/$(SRC_DIR)/%.o: %.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
+
+clean:
+	rm -f $(BUILD_DIR)/libUART.a $(PROJ_OBJS)
 
 .PHONY: clean
 

@@ -45,8 +45,7 @@ typedef struct
     uint8_t* volatile last;  ///< Pointer used as next insert location.
 } ByteFifo;
 /// \brief ByteFifo constructor macro, creates empty queue with given name and
-/// capacity.
-///        It creates memory block on stack, so it is mostly useful in tests.
+/// capacity. It creates memory block on stack, so it is mostly useful in tests.
 /// \param [in] NAME name of ByteFifo to create.
 /// \param [in] CAPACITY capacity of created ByteFifo.
 // clang-format off
@@ -75,20 +74,19 @@ typedef struct
 ///        Should be called before any use of ByteFifo.
 /// \param [in,out] fifo pointer to ByteFifo to initialise.
 /// \param [in] memoryBlock memory block to be assigned to ByteFifo as its
-/// storage area. \param [in] memoryBlockSize size of memory block.
+///             storage area.
+/// \param [in] memoryBlockSize size of memory block.
 void ByteFifo_init(ByteFifo* const fifo,
                    uint8_t* const memoryBlock,
                    const size_t memoryBlockSize);
 
 /// \brief ByteFifo initialization procedure, used to "attach" a FIFO queue on
-/// top of a buffer
-///        with data already inside. Should be called before any use of the
-///        instance.
+///        top of a buffer with data already inside. Should be called before any
+///        use of the instance.
 /// \param [in,out] fifo Pointer to a ByteFifo instance to be initialized.
 /// \param [in] memoryBlock Array of bytes to have a FIFO attached to.
 /// \param [in] memoryBlockSize Number of bytes in the queue. Has to equal the
-/// number of bytes to be
-///                             pulled from it.
+///             number of bytes to be pulled from it.
 void ByteFifo_initFromBytes(ByteFifo* const fifo,
                             uint8_t* const memoryBlock,
                             const size_t memoryBlockSize);

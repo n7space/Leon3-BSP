@@ -25,7 +25,6 @@
 
 #include <stdbool.h>
 #include "SystemConfig.h"
-#include "Startup_Leon3.h"
 #include "Uart.h"
 #include "function_tests/Uart/test_Uart_init.h"
 #include "function_tests/Uart/test_Uart_write.h"
@@ -40,7 +39,7 @@ static Uart uart0;
 int
 main()
 {
-    if(!test_Uart_init(&uart0)) {
+    if(!test_Uart_init(Uart_Id_0, &uart0)) {
         return -1;
     }
     if(!test_Uart_write(&uart0)) {

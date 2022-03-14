@@ -36,65 +36,84 @@
 #include <ByteFifo.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <rtems.h>
 
 /// \brief Uart device identifiers.
 typedef enum
 {
-    Uart_Id_0 = 0, ///< UART0 device
-    Uart_Id_1 = 1, ///< UART1 device
-    Uart_Id_2 = 2, ///< UART2 device
-    Uart_Id_3 = 3, ///< UART3 device
-    Uart_Id_4 = 4, ///< UART4 device
-    Uart_Id_5 = 5, ///< UART5 device
-    Error_Id = 6   ///< Error value.
+    Uart_Id_0 = 0,  ///< UART0 device
+    Uart_Id_1 = 1,  ///< UART1 device
+    Uart_Id_2 = 2,  ///< UART2 device
+    Uart_Id_3 = 3,  ///< UART3 device
+    Uart_Id_4 = 4,  ///< UART4 device
+    Uart_Id_5 = 5,  ///< UART5 device
+    Uart_Id_Max = 6 ///< Error value
 } Uart_Id;
 
 /// \brief Uart parity.
 typedef enum
 {
-    Uart_Parity_Even = 0, ///< Assume even parity bit.
-    Uart_Parity_Odd = 1,  ///< Assume odd parity bit.
-    Uart_Parity_None = 4, ///< Assume no parity.
-    Error_Parity = 9      ///< Error value.
+    Uart_Parity_Even = 0, ///< Assume even parity bit
+    Uart_Parity_Odd = 1,  ///< Assume odd parity bit
+    Uart_Parity_None = 4, ///< Assume no parity
+    Uart_Parity_Max = 9   ///< Error value
 } Uart_Parity;
 
 /// \brief Uart baud rate values.
 typedef enum
 {
-    Uart_BaudRate_300 = 300,       ///< 300 bauds.
-    Uart_BaudRate_600 = 600,       ///< 600 bauds.
-    Uart_BaudRate_1200 = 1200,     ///< 1200 bauds.
-    Uart_BaudRate_1800 = 1800,     ///< 1800 bauds.
-    Uart_BaudRate_2400 = 2400,     ///< 2400 bauds.
-    Uart_BaudRate_4800 = 4800,     ///< 4800 bauds.
-    Uart_BaudRate_9600 = 9600,     ///< 9600 bauds.
-    Uart_BaudRate_19200 = 19200,   ///< 19200 bauds.
-    Uart_BaudRate_28800 = 28800,   ///< 28800 bauds.
-    Uart_BaudRate_38400 = 38400,   ///< 38400 bauds.
-    Uart_BaudRate_57600 = 57600,   ///< 57600 bauds.
-    Uart_BaudRate_576800 = 76800,  ///< 76800 bauds.
+    Uart_BaudRate_300 = 300,       ///< 300 bauds
+    Uart_BaudRate_600 = 600,       ///< 600 bauds
+    Uart_BaudRate_1200 = 1200,     ///< 1200 bauds
+    Uart_BaudRate_1800 = 1800,     ///< 1800 bauds
+    Uart_BaudRate_2400 = 2400,     ///< 2400 bauds
+    Uart_BaudRate_4800 = 4800,     ///< 4800 bauds
+    Uart_BaudRate_9600 = 9600,     ///< 9600 bauds
+    Uart_BaudRate_19200 = 19200,   ///< 19200 bauds
+    Uart_BaudRate_28800 = 28800,   ///< 28800 bauds
+    Uart_BaudRate_38400 = 38400,   ///< 38400 bauds
+    Uart_BaudRate_57600 = 57600,   ///< 57600 bauds
+    Uart_BaudRate_576800 = 76800,  ///< 76800 bauds
     Uart_BaudRate_115200 = 115200, ///< 115200 bauds
-    Error_BaudRate = 0             ///< Error value.
+    Uart_BaudRate_Max = 0          ///< Error value
 } Uart_BaudRate;
+
+/// \brief Enum representing error codes
+typedef enum
+{
+    Uart_ErrorCode_OK = 0,            ///< No error
+    Uart_ErrorCode_Timeout = 1,       ///< Timeout
+    Uart_ErrorCode_RxFifoFull = 2,    ///< Rx FIFO full
+    Uart_ErrorCode_TxFifoFull = 3,    ///< Tx FIFO full
+    Uart_ErrorCode_TxFifoNotNull = 4, ///< Tx FIFO enabled
+    Uart_ErrorCode_RxFifoNotNull = 5  ///< Rx FIFO enabled
+} Uart_ErrorCode;
 
 /// \brief Uart configuration descriptor.
 typedef struct
 {
-    /// \brief Flag indicating whether the transmitter should be enabled.
+    /// \brief Flag indicating whether the transmitter should be enabled
     bool isTxEnabled;
     /// \brief Flag indicating whether the receiver should be enabled
     bool isRxEnabled;
     /// \brief Flag indicating whether to enable local loopback mode
     bool isTestModeEnabled;
-    /// \brief Indicator of used parity bit.
+    /// \brief Indicator of used parity bit
     Uart_Parity parity;
-    /// \brief Target baud rate.
+    /// \brief Target baud rate
     Uart_BaudRate baudRate;
-    /// \brief Indicator of the baud rate clock source.
+    /// \brief Indicator of the baud rate clock source
     uint32_t baudRateClkSrc;
-    /// \brief Baud rate clock source frequency.
+    /// \brief Baud rate clock source frequency
     uint32_t baudRateClkFreq;
 } Uart_Config;
+
+/// \brief Internal data used by interrupt handler
+typedef struct
+{
+    rtems_interrupt_entry rtemsInterruptEntry; ///< RTEMS interrupt entry
+    uint32_t sentBytes;                        ///< Bytes sent in async mode
+} Uart_InterruptData;
 
 /// \brief A function serving as a callback called at the end of transmission.
 typedef void (*UartTxEndCallback)(void* arg);
@@ -102,8 +121,8 @@ typedef void (*UartTxEndCallback)(void* arg);
 /// \brief A descriptor of an end-of-transmission event handler.
 typedef struct
 {
-    UartTxEndCallback callback; ///< Callback function.
-    void* arg;                  ///< Argument to the callback function.
+    UartTxEndCallback callback; ///< Callback function
+    void* arg;                  ///< Argument to the callback function
 } Uart_TxHandler;
 
 /// \brief A function serving as a callback called upon a reception of a byte
@@ -119,19 +138,19 @@ typedef void (*UartRxEndCharacterCallback)(void* arg);
 typedef struct
 {
     /// \brief Callback called when reception queue data count is greater
-    /// than or equal targetLength.
+    /// than or equal targetLength
     UartRxEndLengthCallback lengthCallback;
-    /// \brief Callback called when a targetCharacter is received.
+    /// \brief Callback called when a targetCharacter is received
     UartRxEndCharacterCallback characterCallback;
-    /// \brief Argument for the length callback.
+    /// \brief Argument for the length callback
     void* lengthArg;
-    /// \brief Argument for the character callback.
+    /// \brief Argument for the character callback
     void* characterArg;
     /// \brief Target character, upon reception of which character callback
-    /// is called.
+    /// is called
     uint8_t targetCharacter;
     /// \brief Target length of reception queue, upon reaching of which
-    /// length callback is called.
+    /// length callback is called
     uint32_t targetLength;
 } Uart_RxHandler;
 
@@ -142,30 +161,31 @@ typedef void (*UartErrorCallback)(void* arg);
 /// \brief A descriptor of an error handler.
 typedef struct
 {
-    UartErrorCallback callback; ///< Callback function.
-    void* arg;                  ///< Argument to the callback function.
+    UartErrorCallback callback; ///< Callback function
+    void* arg;                  ///< Argument to the callback function
 } Uart_ErrorHandler;
 
 /// \brief Uart error flags.
 typedef struct
 {
-    bool hasOverrunOccurred;         //< Hardware FIFO overrun detected.
-    bool hasFramingErrorOccurred;    //< Framing error detected.
-    bool hasParityErrorOccurred;     //< Parity error detected.
-    bool hasRxFifoFullErrorOccurred; //< Rx FIFO full error detected.
+    bool hasOverrunOccurred;         //< Hardware FIFO overrun detected
+    bool hasFramingErrorOccurred;    //< Framing error detected
+    bool hasParityErrorOccurred;     //< Parity error detected
+    bool hasRxFifoFullErrorOccurred; //< Rx FIFO full error detected
 } Uart_ErrorFlags;
 
 /// \brief Uart device descriptor.
 typedef struct
 {
-    Uart_Id id;                     ///< Device identifier.
-    Uart_TxHandler txHandler;       ///< End-of-transmission handler descriptor.
-    Uart_RxHandler rxHandler;       ///< Reception handler descriptor.
-    Uart_ErrorHandler errorHandler; ///< Error handler descriptor.
-    ByteFifo* txFifo;               ///< Pointer to a transmission byte queue.
-    ByteFifo* rxFifo;               ///< Pointer to a reception byte queue.
-    UartRegisters_t reg; ///< Pointer to memory-mapped device registers.
-    Uart_Config config;  ///< Configuration descriptor.
+    Uart_Id id;                     ///< Device identifier
+    Uart_TxHandler txHandler;       ///< End-of-transmission handler descriptor
+    Uart_RxHandler rxHandler;       ///< Reception handler descriptor
+    Uart_ErrorHandler errorHandler; ///< Error handler descriptor
+    Uart_ErrorFlags errorFlags;     ///< Error flags
+    Uart_InterruptData interruptData; ///< Interrupt handler internal data
+    ByteFifo* txFifo;                 ///< Pointer to a transmission byte queue
+    ByteFifo* rxFifo;                 ///< Pointer to a reception byte queue
+    UartRegisters_t reg; ///< Pointer to memory-mapped device registers
 } Uart;
 
 /// \brief Configures an Uart device based on a configuration descriptor.
@@ -194,26 +214,26 @@ void Uart_init(Uart_Id id, Uart* const uart);
 /// \brief Synchronously sends a byte over Uart.
 /// \param [in] uart Uart device descriptor.
 /// \param [in] data Byte to send.
-/// \param [in] timeoutLimit An arbitrary timeout value.
+/// \param [in] timeoutLimit Timeout value.
 /// \param [out] errCode An error code generated during the operation.
 /// \retval true Sending was successful.
 /// \retval false Sending timed out or failed.
 bool Uart_write(Uart* const uart,
                 const uint8_t data,
                 uint32_t const timeoutLimit,
-                int* const errCode);
+                Uart_ErrorCode* const errCode);
 
 /// \brief Synchronously receives a byte over Uart.
 /// \param [in] uart Uart device descriptor.
 /// \param [in] data Received byte pointer.
-/// \param [in] timeoutLimit An arbitrary timeout value.
+/// \param [in] timeoutLimit Timeout value.
 /// \param [out] errCode An error code generated during the operation.
 /// \retval true Reception was successful.
 /// \retval false Reception timed out or failed.
 bool Uart_read(Uart* const uart,
                uint8_t* data,
                uint32_t timeoutLimit,
-               int* const errCode);
+               Uart_ErrorCode* const errCode);
 
 /// \brief Asynchronously sends a series of bytes over Uart.
 /// \param [in] uart Uart device descriptor.
@@ -260,9 +280,30 @@ void Uart_registerErrorHandler(Uart* const uart,
                                const Uart_ErrorHandler handler);
 
 /// \brief Default interrupt handler for Uart devices.
-/// \param [in] arg Uart device descriptor passed as void pointer directly to
-///                 RTEMS interrupt handler
-void Uart_handleInterrupt(void* arg);
+/// \param [in] arg Uart device descriptor passed directly to RTEMS interrupt
+///                  handler
+/// \retval true   error handled by interrupt
+/// \retval false  no error occured
+bool Uart_handleError(Uart* const uart);
+
+/// \brief Default interrupt handler for Uart devices.
+/// \param [in] arg Uart device descriptor passed directly to RTEMS interrupt
+///                  handler
+/// \retval true   received byte handled by interrupt
+/// \retval false  no byte received
+bool Uart_handleRx(Uart* const uart);
+
+/// \brief Default interrupt handler for Uart devices.
+/// \param [in] arg Uart device descriptor passed directly to RTEMS interrupt
+///                  handler
+/// \retval true   sent byte handled by interrupt
+/// \retval false  no byte sent
+bool Uart_handleTx(Uart* const uart);
+
+/// \brief Default interrupt handler for Uart devices.
+/// \param [in] arg Uart device descriptor passed directly to RTEMS interrupt
+///                  handler
+void Uart_handleInterrupt(Uart* const uart);
 
 /// \brief Checks status register for hardware errors.
 /// \param [in] statusRegister Twihs statrus register value.

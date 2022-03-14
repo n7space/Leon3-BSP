@@ -34,29 +34,29 @@
 
 #include <stdint.h>
 
-/// \brief Structure representing UART memory addresses.
+/// \brief Enum representing UART memory addresses.
 typedef enum
 {
-    Uart0_address = 0x80000100U, ///< UART0.
-    Uart1_address = 0x80100100U, ///< UART1.
-    Uart2_address = 0x80100200U, ///< UART2.
-    Uart3_address = 0x80100300U, ///< UART3.
-    Uart4_address = 0x80100400U, ///< UART4.
-    Uart5_address = 0x80100500U, ///< UART5.
-    Error_address = 0xFFFFFFFFU  ///< Error value.
+    Uart0_address = 0x80000100U,  ///< UART0
+    Uart1_address = 0x80100100U,  ///< UART1
+    Uart2_address = 0x80100200U,  ///< UART2
+    Uart3_address = 0x80100300U,  ///< UART3
+    Uart4_address = 0x80100400U,  ///< UART4
+    Uart5_address = 0x80100500U,  ///< UART5
+    UartMax_address = 0xFFFFFFFFU ///< Max value
 } Uart_address;
 
-/// \brief Structure representing UART interrupt vector numbers.
+/// \brief Enum representing UART interrupt vector numbers.
 typedef enum
 {
-    Uart0_irqNum = 2,    ///< UART0 IRQ.
-    Uart1_irqNum = 17,   ///< UART1 IRQ.
-    Uart2_irqNum = 18,   ///< UART2 IRQ.
-    Uart3_irqNum = 19,   ///< UART3 IRQ.
-    Uart4_irqNum = 20,   ///< UART4 IRQ.
-    Uart5_irqNum = 21,   ///< UART5 IRQ.
-    Error_irqNum = 0xFFU ///< Error value.
-} Uart_irqNum;
+    Uart0_interrupt = 2,      ///< UART0 IRQ
+    Uart1_interrupt = 17,     ///< UART1 IRQ
+    Uart2_interrupt = 18,     ///< UART2 IRQ
+    Uart3_interrupt = 19,     ///< UART3 IRQ
+    Uart4_interrupt = 20,     ///< UART4 IRQ
+    Uart5_interrupt = 21,     ///< UART5 IRQ
+    UartMax_interrupt = 0xFFU ///< Max value
+} Uart_interrupt;
 
 /// \brief Structure representing UART control and status registers (Big
 ///        Endian).
@@ -102,6 +102,8 @@ typedef volatile struct UartRegisters
 #define UART_CONTROL_RE     0x1U        // Receiver enable
 
 #define UART_CLKSCL_OFFSET  0x0CU
+#define UART_CLKSCL_DIV     8U          // Clock divider value for baud rate generation
+#define UART_CLKSCL_SHIFT   4U          // Byte shift to convert 12-bit clkscl register value to 16-bit
 
 #define UART_FIFO_OFFSET    0x10U
 
