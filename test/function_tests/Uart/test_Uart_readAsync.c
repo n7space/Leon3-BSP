@@ -34,6 +34,12 @@ BYTE_FIFO_CREATE(rxByteFifoForReadTest, 40);
 bool
 test_Uart_readAsync(Uart* uart)
 {
+    Uart_init(Uart_Id_0, uart);
+    Uart_Config config = (Uart_Config){ 0 };
+    config.isTxEnabled = 1;
+    config.isRxEnabled = 1;
+    Uart_setConfig(uart, &config);
+    Uart_startup(uart);
     charReceived = false;
     lengthReceived = false;
     ByteFifo_clear(&rxByteFifoForReadTest);
@@ -42,8 +48,10 @@ test_Uart_readAsync(Uart* uart)
     while(!ByteFifo_isFull(&rxByteFifoForReadTest)) {
         if(lengthReceived == true || charReceived == true) {
             Uart_writeAsync(uart, &rxByteFifoForReadTest, uart->txHandler);
+            Uart_shutdown(uart);
             return true;
         }
     }
+    Uart_shutdown(uart);
     return false;
 }

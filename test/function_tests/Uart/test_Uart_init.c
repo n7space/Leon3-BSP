@@ -10,5 +10,6 @@ test_Uart_init(Uart_Id id, Uart* uart)
     config.isRxEnabled = 1;
     Uart_setConfig(uart, &config);
     Uart_startup(uart);
+    Uart_shutdown(uart);
     return true;
 }
