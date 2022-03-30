@@ -6,6 +6,8 @@ RTEMS_ROOT = /opt/rtems-6-sparc-gr712rc-smp-3
 SIS_NAME = sis
 SIS_VERSION = 2.29
 
+TSIM = tsim-leon3
+
 AR = $(RTEMS_ROOT)/sparc-rtems6/bin/ar
 AS = $(RTEMS_ROOT)/sparc-rtems6/bin/as
 CC = $(RTEMS_CPU)-rtems$(RTEMS_API)-gcc
