@@ -53,30 +53,62 @@ getAddressBase(Uart_Id id)
     }
 }
 
+static inline void
+setBaudRate(const Uart_BaudRate baud, Uart* uart)
+{
+    if(baud != Uart_BaudRate_Max) {
+        uint32_t freq = CONFIGURE_MICROSECONDS_PER_TICK * 1000;
+        uint16_t scaler = (freq / (baud * UART_CLKSCL_DIV)) - 1;
+        uart->reg->clkscl = scaler;
+    }
+}
+
 static inline Uart_BaudRate
 getBaudRate(const Uart* const uart)
 {
-    uint32_t freq = rtems_clock_get_ticks_per_second();
-    uint16_t clkscl = (uart->reg->clkscl << UART_CLKSCL_SHIFT) + 1;
-    uint32_t baud = freq / (UART_CLKSCL_DIV * clkscl);
-    switch(baud) {
-        case 300:
-        case 600:
-        case 1200:
-        case 1800:
-        case 2400:
-        case 4800:
-        case 9600:
-        case 19200:
-        case 28800:
-        case 38400:
-        case 57600:
-        case 76800:
-        case 115200:
-            return (Uart_BaudRate)baud;
-        default:
-            return Uart_BaudRate_Max;
+    uint16_t clkscl = (uart->reg->clkscl << UART_CLKSCL_SHIFT);
+    uint32_t freq = CONFIGURE_MICROSECONDS_PER_TICK * 1000;
+    uint32_t baud = freq / (UART_CLKSCL_DIV * (clkscl + 1));
+    if(baud > 115200) {
+        return Uart_BaudRate_115200;
     }
+    if(baud > 76800) {
+        return Uart_BaudRate_76800;
+    }
+    if(baud > 57600) {
+        return Uart_BaudRate_57600;
+    }
+    if(baud > 38400) {
+        return Uart_BaudRate_38400;
+    }
+    if(baud > 28800) {
+        return Uart_BaudRate_28800;
+    }
+    if(baud > 19200) {
+        return Uart_BaudRate_19200;
+    }
+    if(baud > 9600) {
+        return Uart_BaudRate_9600;
+    }
+    if(baud > 4800) {
+        return Uart_BaudRate_4800;
+    }
+    if(baud > 2400) {
+        return Uart_BaudRate_2400;
+    }
+    if(baud > 1800) {
+        return Uart_BaudRate_1800;
+    }
+    if(baud > 1200) {
+        return Uart_BaudRate_1200;
+    }
+    if(baud > 600) {
+        return Uart_BaudRate_600;
+    }
+    if(baud > 300) {
+        return Uart_BaudRate_300;
+    }
+    return Uart_BaudRate_Max;
 }
 
 static inline Uart_interrupt
@@ -108,19 +140,6 @@ emptyCallback(void* arg)
     (void)arg;
 }
 
-static Uart_TxHandler defaultTxHandler = { .callback = emptyCallback,
-                                           .arg = 0 };
-
-static Uart_RxHandler defaultRxHandler = { .lengthCallback = emptyCallback,
-                                           .characterCallback = emptyCallback,
-                                           .lengthArg = 0,
-                                           .characterArg = 0,
-                                           .targetCharacter = '\0',
-                                           .targetLength = 0 };
-
-static Uart_ErrorHandler defaultErrorHandler = { .callback = emptyCallback,
-                                                 .arg = 0 };
-
 void
 Uart_setConfig(Uart* const uart, const Uart_Config* const config)
 {
@@ -146,6 +165,7 @@ Uart_setConfig(Uart* const uart, const Uart_Config* const config)
             uart->reg->control &= ~UART_CONTROL_PE;
             break;
     }
+    setBaudRate(config->baudRate, uart);
 #endif
 }
 
@@ -166,7 +186,7 @@ Uart_getConfig(const Uart* const uart, Uart_Config* const config)
     config->baudRate = getBaudRate(uart);
 #endif
     config->baudRateClkSrc = GPTIMER_ADDRESS_BASE;
-    config->baudRateClkFreq = rtems_clock_get_ticks_per_second();
+    config->baudRateClkFreq = CONFIGURE_MICROSECONDS_PER_TICK * 1000;
 }
 
 void
@@ -202,16 +222,20 @@ Uart_init(Uart_Id id, Uart* const uart)
 {
     uart->id = id;
     uart->reg = getAddressBase(id);
-    uart->interruptData.rtemsInterruptEntry = (rtems_interrupt_entry){ 0 };
     uart->interruptData.sentBytes = 0;
     uart->errorFlags = (Uart_ErrorFlags){ 0 };
-    uart->txHandler = defaultTxHandler;
-    uart->rxHandler = defaultRxHandler;
-    uart->errorHandler = defaultErrorHandler;
+    uart->txHandler.callback = emptyCallback;
+    uart->txHandler.arg = 0;
+    uart->rxHandler.characterCallback = emptyCallback;
+    uart->rxHandler.characterArg = 0;
+    uart->rxHandler.lengthCallback = emptyCallback;
+    uart->rxHandler.lengthArg = 0;
+    uart->rxHandler.targetCharacter = '\0';
+    uart->rxHandler.targetLength = 0;
+    uart->errorHandler.callback = emptyCallback;
+    uart->errorHandler.arg = 0;
     uart->txFifo = NULL;
     uart->rxFifo = NULL;
-    Uart_shutdown(uart);
-    rtems_interrupt_clear(interruptNumber(uart->id));
 }
 
 bool

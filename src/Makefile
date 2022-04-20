@@ -7,7 +7,7 @@ SRC = $(wildcard ./**/*.c)
 INCL = ./ $(sort $(dir $(wildcard ./**/*.h)))
 PROJ_OBJS = $(addprefix $(BUILD_DIR)/$(SRC_DIR)/,$(patsubst %.c,%.o,$(SRC)))
 
-CFLAGS = -g $(DEPFLAGS) $(WARNFLAGS) $(ABI_FLAGS) $(OPTFLAGS) $(addprefix -I,$(INCL)) -DRTEMS_API_$(RTEMS_API)
+CFLAGS = -g -mfix-gr712rc $(DEPFLAGS) $(WARNFLAGS) $(ABI_FLAGS) $(OPTFLAGS) $(addprefix -I,$(INCL)) -DRTEMS_API_$(RTEMS_API)
 CCLINK = $(CC) $(CFLAGS) -Wl,-Map,$(basename $@).map
 
 all: $(BUILD_DIR)/libUART.a

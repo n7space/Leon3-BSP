@@ -22,6 +22,6 @@ PKG_CONFIG := $(RTEMS_ROOT)/lib/pkgconfig/$(RTEMS_CPU)-rtems$(RTEMS_API)-$(RTEMS
 
 DEPFLAGS = -MT $@ -MD -MP -MF $(basename $@).d
 WARNFLAGS = -Wall -Wextra
-OPTFLAGS = -Os -ffunction-sections -fdata-sections
+OPTFLAGS = -O0
 ABI_FLAGS = $(shell pkg-config --cflags $(PKG_CONFIG))
 LDFLAGS = $(shell pkg-config --libs $(PKG_CONFIG))
