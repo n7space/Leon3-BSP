@@ -73,7 +73,7 @@ typedef enum
     Uart_BaudRate_28800 = 28800,   ///< 28800 bauds
     Uart_BaudRate_38400 = 38400,   ///< 38400 bauds
     Uart_BaudRate_57600 = 57600,   ///< 57600 bauds
-    Uart_BaudRate_576800 = 76800,  ///< 76800 bauds
+    Uart_BaudRate_76800 = 76800,  ///< 76800 bauds
     Uart_BaudRate_115200 = 115200, ///< 115200 bauds
     Uart_BaudRate_Max = 0          ///< Error value
 } Uart_BaudRate;

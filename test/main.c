@@ -31,6 +31,8 @@
 #include "function_tests/Uart/test_Uart_read.h"
 #include "function_tests/Uart/test_Uart_writeAsync.h"
 #include "function_tests/Uart/test_Uart_readAsync.h"
+#include "function_tests/Uart/test_Uart_setBaud9600.h"
+#include "function_tests/Uart/test_Uart_setBaud19200.h"
 #include <rtems.h>
 #include <rtems/confdefs.h>
 
@@ -52,6 +54,12 @@ main()
         return -1;
     }
     if(!test_Uart_readAsync(&uart0)) {
+        return -1;
+    }
+    if(!test_Uart_setBaud9600(&uart0)) {
+        return -1;
+    }
+    if(!test_Uart_setBaud19200(&uart0)) {
         return -1;
     }
     return 0;
