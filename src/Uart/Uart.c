@@ -26,11 +26,10 @@
 #include <stdbool.h>
 #include "Uart.h"
 #include "UartRegisters.h"
+#include "TimerRegisters.h"
 #include "ByteFifo.h"
 #include "SystemConfig.h"
 #include <rtems.h>
-
-#define GPTIMER_ADDRESS_BASE 0x80000300U
 
 static inline UartRegisters_t
 getAddressBase(Uart_Id id)
