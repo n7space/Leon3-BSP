@@ -12,7 +12,7 @@ FUNCTION_TESTS = $(addprefix $(BUILD_DIR)/$(TEST_DIR)/,$(patsubst %.c,%.o,$(FUNC
 INCL = $(SRC_DIR)/ $(sort $(dir $(wildcard $(SRC_DIR)/**/*.h))) $(sort $(dir $(wildcard $(FUNCTION_TESTS_DIR)/**/*.h)))
 STATIC_LIBS = -Wl,-Bstatic $(BUILD_DIR)/libUART.a
 
-CFLAGS = -g -O2 $(shell pkg-config --cflags $(PKG_CONFIG)) $(addprefix -I,$(INCL))
+CFLAGS = -g $(OPTFLAGS) $(shell pkg-config --cflags $(PKG_CONFIG)) $(addprefix -I,$(INCL))
 CCLINK = $(CC) $(CFLAGS) -Wl,-Map,$(basename $@).map
 
 all: test

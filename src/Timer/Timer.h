@@ -32,9 +32,10 @@
 #ifndef BSP_TIMER_H
 #define BSP_TIMER_H
 
-#include <TimerRegisters.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include "TimerRegisters.h"
+#include "SystemConfig.h"
 
 /// \brief Timer device identifiers.
 typedef enum
@@ -53,6 +54,7 @@ typedef struct
     uint32_t clockSource;    ///< Clock source
     bool isInterruptEnabled; ///< Is interrupt enabled
     bool isEnabled;          ///< Is timer enabled
+    bool isAutoReloaded;     ///< Is timer automatically reloaded
     uint32_t reloadValue;    ///< Reload value
 } Timer_Config;
 
@@ -63,6 +65,10 @@ typedef struct
     TimerRegisters_t regs; ///< Hardware timer registers
 } Timer;
 
+/// \brief Sets base scaler value for all timers relative to systick
+/// \param [in] scaler Reload register value (minimum 5)
+void Timer_setBaseScalerReloadValue(uint32_t scaler);
+
 /// \brief Configures an Timer device based on a configuration descriptor.
 /// \param [in] timer Timer device descriptor.
 /// \param [in] config A configuration descriptor.
@@ -72,6 +78,33 @@ void Timer_setConfig(Timer* const timer, const Timer_Config* const config);
 /// \param [in] timer Timer device descriptor.
 /// \param [out] config A configuration descriptor.
 void Timer_getConfig(const Timer* const timer, Timer_Config* const config);
+
+/// \brief Performs a hardware startup procedure of Timer device.
+/// \param [in] timer Timer device descriptor.
+void Timer_startup(Timer* const timer);
+
+/// \brief Performs a hardware shutdown procedure of Timer device.
+/// \param [in] timer Timer device descriptor.
+void Timer_shutdown(Timer* const timer);
+
+/// \brief Intiializes a device descriptor for Timer.
+/// \param [in] id Timer device identifier.
+/// \param [out] timer Timer device descriptor.
+void Timer_init(Timer_Id id, Timer* const timer);
+
+/// \brief Clears the current Timer counter value.
+/// \param [in] timer Pointer to a structure representing Timer.
+void Timer_clearCurrentValue(Timer* const timer);
+
+/// \brief Returns the current Timer counter value.
+/// \param [in] timer Pointer to a structure representing Timer.
+/// \returns Current counter value.
+uint32_t Timer_getCurrentValue(const Timer* const timer);
+
+/// brief Returns whether the counter has counted to 0 since the last read.
+/// \param [in] timer Pointer to a structure representing Timer.
+/// \returns Whether the counter has counted to 0.
+bool Timer_hasCountedToZero(const Timer* const timer);
 
 #endif // BSP_TIMER_H
 

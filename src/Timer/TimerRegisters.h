@@ -32,11 +32,14 @@
 #ifndef BSP_TIMERREGS_H
 #define BSP_TIMERREGS_H
 
+#include <stdint.h>
+
 #define GPTIMER_ADDRESS_BASE 0x80000300U
 
 /// \brief Enum representing Timer memory addresses.
 typedef enum
 {
+    Timer0_address = 0x80000300U,  ///< General Purpose Timer 0
     Timer1_address = 0x80000310U,  ///< General Purpose Timer 1
     Timer2_address = 0x80000320U,  ///< General Purpose Timer 2
     Timer3_address = 0x80000330U,  ///< General Purpose Timer 3
@@ -73,19 +76,19 @@ typedef volatile struct TimerRegisters
 // clang-format off
 
 #define TIMER_CONFIGURATION_OFFSET  0x08U
-#define TIMER_CONFIGURATION_DF      0x09U // Disable timer freeze
-#define TIMER_CONFIGURATION_SI      0x08U // Separate interrupts
-#define TIMER_CONFIGURATION_IRQ     0x03U // Interrupt ID of first timer
-#define TIMER_CONFIGURATION_TIMERS  0x00U // Number of implemented timers
+#define TIMER_CONFIGURATION_DF      0x200U // Disable timer freeze
+#define TIMER_CONFIGURATION_SI      0x100U // Separate interrupts
+#define TIMER_CONFIGURATION_IRQ     0x0F8U // Interrupt ID of first timer
+#define TIMER_CONFIGURATION_TIMERS  0x007U // Number of implemented timers
 
 #define TIMER_CONTROL_OFFSET        0x08U
-#define TIMER_CONTROL_DH            0x06U // Debug Halt
-#define TIMER_CONTROL_CH            0x05U // Chain with preceding time
-#define TIMER_CONTROL_IP            0x04U // Interrupt Pending
-#define TIMER_CONTROL_IE            0x03U // Interrupt Enable
-#define TIMER_CONTROL_LD            0x02U // Load value from reload register to counter
-#define TIMER_CONTROL_RS            0x01U // Restart
-#define TIMER_CONTROL_EN            0x00U // Enable the timer
+#define TIMER_CONTROL_DH            0x40U // Debug Halt
+#define TIMER_CONTROL_CH            0x20U // Chain with preceding time
+#define TIMER_CONTROL_IP            0x10U // Interrupt Pending
+#define TIMER_CONTROL_IE            0x08U // Interrupt Enable
+#define TIMER_CONTROL_LD            0x04U // Load value from reload register to counter
+#define TIMER_CONTROL_RS            0x02U // Restart
+#define TIMER_CONTROL_EN            0x01U // Enable the timer
 
 // clang-format on
 

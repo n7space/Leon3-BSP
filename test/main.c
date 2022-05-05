@@ -26,6 +26,9 @@
 #include <stdbool.h>
 #include "SystemConfig.h"
 #include "Uart.h"
+#include "Timer.h"
+#include "function_tests/Timer/test_Timer_init.h"
+#include "function_tests/Timer/test_Timer_getValue.h"
 #include "function_tests/Uart/test_Uart_init.h"
 #include "function_tests/Uart/test_Uart_write.h"
 #include "function_tests/Uart/test_Uart_read.h"
@@ -35,6 +38,10 @@
 #include <rtems/confdefs.h>
 
 static Uart uart0;
+
+static Timer timer1;
+
+static Timer timer3;
 
 int
 main()
@@ -52,6 +59,18 @@ main()
         return -1;
     }
     if(!test_Uart_readAsync(&uart0)) {
+        return -1;
+    }
+    if(!test_Timer_init(Timer_Id_1, &timer1)) {
+        return -1;
+    }
+    if(!test_Timer_getValue(Timer_Id_1, &timer1, Uart_Id_0, &uart0)) {
+        return -1;
+    }
+    if(!test_Timer_init(Timer_Id_3, &timer3)) {
+        return -1;
+    }
+    if(!test_Timer_getValue(Timer_Id_3, &timer3, Uart_Id_0, &uart0)) {
         return -1;
     }
     return 0;
