@@ -19,7 +19,7 @@ $(BUILD_DIR)/$(SIS_NAME)-$(SIS_VERSION):
 	$(MAKE) -C $(SIS_DIR) sis
 
 test: $(BUILD_DIR)/libUART.a $(BUILD_DIR)/$(SIS_NAME)-$(SIS_VERSION) $(BUILD_DIR)/$(TEST)
-	$(BUILD_DIR)/$(SIS_NAME)-$(SIS_VERSION) -leon3 -d 10 -freq 100 -m 4 -r -v $(BUILD_DIR)/$(TEST)
+	$(SIS_DIR)/$(BUILD_DIR)/$(SRC_DIR)/$(SIS_NAME)-$(SIS_VERSION) -leon3 -d 10 -freq 100 -m 4 -r -v -uart1 uart $(BUILD_DIR)/$(TEST)
 
 gdb: $(BUILD_DIR)/libUART.a $(BUILD_DIR)/$(SIS_NAME)-$(SIS_VERSION) $(BUILD_DIR)/$(TEST)
 	$(BUILD_DIR)/$(SIS_NAME)-$(SIS_VERSION) -leon3 -gdb -port 1234 -d 10 -freq 100 -m 4 -r -v $(BUILD_DIR)/$(TEST)
