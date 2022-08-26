@@ -1,7 +1,7 @@
 RTEMS_API = 6
 RTEMS_CPU = sparc
 RTEMS_BSP = gr712rc-qual-only
-RTEMS_ROOT = /opt/rtems-6-sparc-gr712rc-smp-3
+RTEMS_ROOT = /opt/rtems-6-sparc-gr712rc-smp-4
 
 SIS_NAME = sis
 SIS_VERSION = 2.29
