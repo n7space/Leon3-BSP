@@ -37,7 +37,7 @@
 #include "TimerRegisters.h"
 #include "SystemConfig.h"
 
-/// \brief Timer device identifiers.
+/// \brief APBCTRL1 timer device identifiers.
 typedef enum
 {
     Timer_Id_0 = 0,   ///< Base system timer
@@ -46,7 +46,16 @@ typedef enum
     Timer_Id_3 = 3,   ///< Timer 3
     Timer_Id_4 = 4,   ///< Timer 4
     Timer_Id_Max = 5, ///< Error value
-} Timer_Id;
+} Timer_apbctrl1_Id;
+
+/// \brief APBCTRL2 timer device identifiers.
+typedef enum
+{
+    Timer_Id_0 = 0,   ///< Base system timer
+    Timer_Id_1 = 1,   ///< Timer 1
+    Timer_Id_2 = 2,   ///< Timer 2
+    Timer_Id_Max = 5, ///< Error value
+} Timer_apbctrl2_Id;
 
 /// \brief Timer configuration descriptor.
 typedef struct
@@ -55,6 +64,7 @@ typedef struct
     bool isInterruptEnabled; ///< Is interrupt enabled
     bool isEnabled;          ///< Is timer enabled
     bool isAutoReloaded;     ///< Is timer automatically reloaded
+    bool isChained;          ///< Is timer chained to the preceding timer, creating a one 64 bit timer
     uint32_t reloadValue;    ///< Reload value
 } Timer_Config;
 

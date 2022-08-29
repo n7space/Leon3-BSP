@@ -34,17 +34,17 @@
 
 #include <stdint.h>
 
-#define GPTIMER_ADDRESS_BASE 0x80000300U
+#define GPTIMER_APBCTRL1_ADDRESS_BASE 0x80000300u
+#define GPTIMER_APBCTRL2_ADDRESS_BASE 0x80100600u
 
 /// \brief Enum representing Timer memory addresses.
 typedef enum
 {
-    Timer0_address = 0x80000300U,  ///< General Purpose Timer 0
-    Timer1_address = 0x80000310U,  ///< General Purpose Timer 1
-    Timer2_address = 0x80000320U,  ///< General Purpose Timer 2
-    Timer3_address = 0x80000330U,  ///< General Purpose Timer 3
-    Timer4_address = 0x80000340U,  ///< General Purpose Timer 4
-    TimerMax_address = 0xFFFFFFFFU ///< Max value
+    Timer1_address = 0x80000310u,  ///< General Purpose Timer 1
+    Timer2_address = 0x80000320u,  ///< General Purpose Timer 2
+    Timer3_address = 0x80000330u,  ///< General Purpose Timer 3
+    Timer4_address = 0x80000340u,  ///< General Purpose Timer 4
+    TimerMax_address = 0xFFFFFFFFu ///< Max value
 } Timer_address;
 
 /// \brief Enum representing Timer interrupt vector numbers.
@@ -54,43 +54,76 @@ typedef enum
     Timer2_interrupt = 9,      ///< Timer 2 IRQ
     Timer3_interrupt = 10,     ///< Timer 3 IRQ
     Timer4_interrupt = 11,     ///< Timer 4 IRQ
-    TimerMax_interrupt = 0xFFU ///< Max value
-} Timer_interrupt;
+    TimerMax_interrupt = 0xFFu ///< Max value
+} Timer_apbctrl1_interrupt;
 
-/// \brief Structure representing global scaler and configuration registers
+/// \brief Enum representing Timer control register flags.
+typedef enum
+{
+    EN = 0,     ///< Enable the timer
+    RS,         ///< Restart
+    LD,         ///< Load value from reload register to counter
+    IE,         ///< Interrupt Enable
+    IP,         ///< Interrupt Pending
+    CH,         ///< Chain with preceding time
+    DH,         ///< Debug Halt
+    MAX = 0xFFu ///< Max value
+} Timer_control_register_flags;
+
+/// \brief Enum representing config register flags for APBCTRL1 Timer.
+typedef enum
+{
+    TIMERS = 0, ///< Number of implemented timers
+    IRQ = 3,    ///< Interrupt ID of first timer
+    SI = 8,     ///< Separate interrupts
+    DF = 9,     ///< Disable timer freeze
+    MAX = 0xFFu ///< Max value
+} Timer_apbctrl1_config_register_flags;
+
+/// \brief Enum representing config register flags for APBCTRL2 Timer.
+typedef enum
+{
+    TIMERS = 0, ///< Number of implemented timers
+    IRQ = 3,    ///< Interrupt ID of first timer
+    SI = 8,     ///< Separate interrupts
+    DF = 9,     ///< Disable timer freeze
+    EL = 11,    ///< Enable latching
+    MAX = 0xFFu ///< Max value
+} Timer_apbctrl2_config_register_flags;
+
+/// \brief Structure representing global scaler and configuration registers for Apbctrl1 timers
 typedef volatile struct TimerBaseRegisters
 {
     uint32_t scaler;        ///< scaler value register
     uint32_t reload;        ///< scaler reload value register
     uint32_t configuration; ///< configuration register
-} * TimerBaseRegisters_t;
+} * TimerApbctrl1BaseRegisters;
 
-/// \brief Structure representing Timer control registers (Big Endian).
-typedef volatile struct TimerRegisters
+/// \brief Structure representing global scaler and configuration registers for Apbctrl2 timers
+typedef volatile struct TimerBaseRegisters
+{
+    uint32_t scaler;             ///< scaler value register
+    uint32_t reload;             ///< scaler reload value register
+    uint32_t configuration;      ///< configuration register
+    uint32_t latchConfiguration; ///< latch configuration register
+} * TimerApbctrl2BaseRegisters;
+
+/// \brief Structure representing Apbctrl1 Timer control registers (Big Endian).
+typedef volatile struct
 {
     uint32_t counter; ///< counter value register
     uint32_t reload;  ///< reload value register
     uint32_t control; ///< control register
-} * TimerRegisters_t;
+} * TimerApbctrl1Registers;
 
-// clang-format off
-
-#define TIMER_CONFIGURATION_OFFSET  0x08U
-#define TIMER_CONFIGURATION_DF      0x200U // Disable timer freeze
-#define TIMER_CONFIGURATION_SI      0x100U // Separate interrupts
-#define TIMER_CONFIGURATION_IRQ     0x0F8U // Interrupt ID of first timer
-#define TIMER_CONFIGURATION_TIMERS  0x007U // Number of implemented timers
-
-#define TIMER_CONTROL_OFFSET        0x08U
-#define TIMER_CONTROL_DH            0x40U // Debug Halt
-#define TIMER_CONTROL_CH            0x20U // Chain with preceding time
-#define TIMER_CONTROL_IP            0x10U // Interrupt Pending
-#define TIMER_CONTROL_IE            0x08U // Interrupt Enable
-#define TIMER_CONTROL_LD            0x04U // Load value from reload register to counter
-#define TIMER_CONTROL_RS            0x02U // Restart
-#define TIMER_CONTROL_EN            0x01U // Enable the timer
-
-// clang-format on
+/// \brief Structure representing Apbctrl2 Timer control registers (Big Endian).
+typedef volatile struct
+{
+    uint32_t counter; ///< counter value register
+    uint32_t reload;  ///< reload value register
+    uint32_t control; ///< control register
+    uint32_t latch;   ///< latch register
+} * TimerApbctrl2Registers;
 
 #endif // BSP_TIMERREGS_H
 
