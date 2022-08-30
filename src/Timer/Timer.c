@@ -27,52 +27,110 @@
 #include "Timer.h"
 #include "SystemConfig.h"
 
-static TimerBaseRegisters_t baseRegisters =
-        (TimerBaseRegisters_t)GPTIMER_ADDRESS_BASE;
+static Timer_Apbctrl1_Base_Registers baseApbctrl1Registers =
+        (Timer_Apbctrl1_Base_Registers) GPTIMER_APBCTRL1_ADDRESS_BASE;
 
-static inline TimerRegisters_t
-getAddress(Timer_Id id)
+static Timer_Apbctrl2_Base_Registers baseApbctrl2Registers =
+        (Timer_Apbctrl2_Base_Registers) GPTIMER_APBCTRL2_ADDRESS_BASE;
+
+static inline Timer_Apbctrl1_Registers
+getApbctrl1TimerById(Timer_Id id)
 {
-    switch(id) {
+    Timer_Apbctrl1_Registers result = NULL;
+
+    switch (id) {
         case Timer_Id_1:
-            return (TimerRegisters_t)Timer1_address;
+            result = (Timer_Apbctrl1_Registers)Timer1_Apbctrl1_Address;
         case Timer_Id_2:
-            return (TimerRegisters_t)Timer2_address;
+            result = (Timer_Apbctrl1_Registers)Timer2_Apbctrl1_Address;
         case Timer_Id_3:
-            return (TimerRegisters_t)Timer3_address;
+            result = (Timer_Apbctrl1_Registers)Timer3_Apbctrl1_Address;
         case Timer_Id_4:
-            return (TimerRegisters_t)Timer4_address;
+            result = (Timer_Apbctrl1_Registers)Timer4_Apbctrl1_Address;
         default:
-            return (TimerRegisters_t)TimerMax_address;
+            result = (Timer_Apbctrl1_Registers)TimerMax_Apbctrl1_Address;
     }
+
+    return result;
+}
+
+static inline Timer_Apbctrl2_Registers
+getApbctrl2TimerById(Timer_Id id)
+{
+    Timer_Apbctrl2_Registers result = NULL;
+
+    switch (id) {
+        case Timer_Id_1:
+            result = (Timer_Apbctrl2_Registers)Timer1_Apbctrl2_Address;
+        case Timer_Id_2:
+            result = (Timer_Apbctrl2_Registers)Timer2_Apbctrl2_Address;
+        default:
+            result = (Timer_Apbctrl2_Registers)TimerMax_Apbctrl2_Address;
+    }
+
+    return result;
 }
 
 static inline Timer_Id
-getTimerId(uint32_t address)
+getApbctrl1TimerId(uint32_t address)
 {
-    if(address == Timer1_address) {
-        return Timer_Id_1;
+    Timer_Id result;
+
+    switch (address) {
+        case Timer1_Apbctrl1_Address: {
+            result = Timer_Id_1;
+        }
+        case Timer2_Apbctrl1_Address: {
+            result = Timer_Id_2;
+        }
+        case Timer3_Apbctrl1_Address: {
+            result = Timer_Id_3;
+        }
+        case Timer4_Apbctrl1_Address: {
+            result = Timer_Id_4;
+        }
+        default: {
+            result = TimerMax_Apbctrl1_Address;
+        }
     }
-    if(address == Timer2_address) {
-        return Timer_Id_2;
+
+    return result;
+}
+
+static inline Timer_Id
+getApbctrl2TimerId(uint32_t address)
+{
+    Timer_Id result;
+
+    switch (address) {
+        case Timer1_Apbctrl2_Address: {
+            result = Timer_Id_1;
+        }
+        case Timer2_Apbctrl2_Address: {
+            result = Timer_Id_2;
+        }
+        default: {
+            result = TimerMax_Apbctrl2_Address;
+        }
     }
-    if(address == Timer3_address) {
-        return Timer_Id_3;
-    }
-    if(address == Timer4_address) {
-        return Timer_Id_4;
-    }
-    return Timer_Id_Max;
+
+    return result;
 }
 
 void
-Timer_setBaseScalerReloadValue(uint32_t scaler)
+Timer_Apbctrl1_setBaseScalerReloadValue(uint16_t scaler)
 {
-    baseRegisters->reload = scaler;
+    baseApbctrl1Registers->reload = (uint32_t) scaler;
 }
 
 void
-Timer_setConfig(Timer* const timer, const Timer_Config* const config)
+Timer_Apbctrl2_setBaseScalerReloadValue(uint8_t scaler)
+{
+    baseApbctrl2Registers->reload = (uint32_t) scaler;
+}
+
+void
+Timer_setConfig(uint32_t* const timer_control_register, const Timer_Config* const config)
 {
     timer->id = getTimerId(config->clockSource);
     timer->regs = getAddress(timer->id);
@@ -92,6 +150,18 @@ Timer_setConfig(Timer* const timer, const Timer_Config* const config)
         timer->regs->control &= ~TIMER_CONTROL_RS;
     }
     timer->regs->reload = config->reloadValue;
+}
+
+void
+Timer_Apbctrl1_setConfig(Timer_Apbctrl1* const timer, const Timer_Config* const config)
+{
+    Timer_setConfig (&timer->regs->control, config);
+}
+
+void
+Timer_Apbctrl2_setConfig(Timer_Apbctrl2* const timer, const Timer_Config* const config)
+{
+    Timer_setConfig (&timer->regs->control, config);
 }
 
 void
