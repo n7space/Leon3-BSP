@@ -164,7 +164,7 @@ Uart_getConfig(const Uart* const uart, Uart_Config* const config)
     }
     config->baudRate = getBaudRate(uart);
 #endif
-    config->baudRateClkSrc = GPTIMER_ADDRESS_BASE;
+    // config->baudRateClkSrc = GPTIMER_ADDRESS_BASE;
     config->baudRateClkFreq = rtems_clock_get_ticks_per_second();
 }
 

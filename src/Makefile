@@ -1,28 +1,15 @@
 include ../definitions.mk
 
-SRC_DIR = src
-BUILD_DIR=../build
+SRC_BUILD_DIR = ../$(BUILD_DIR)/$(SRC_DIR)
 
-SRC = $(wildcard ./**/*.c)
-INCL = ./ $(sort $(dir $(wildcard ./**/*.h)))
-PROJ_OBJS = $(addprefix $(BUILD_DIR)/$(SRC_DIR)/,$(patsubst %.c,%.o,$(SRC)))
+all: timers
 
-CFLAGS = -g -mfix-gr712rc $(DEPFLAGS) $(WARNFLAGS) $(ABI_FLAGS) $(OPTFLAGS) $(addprefix -I,$(INCL)) -DRTEMS_API_$(RTEMS_API)
-CCLINK = $(CC) $(CFLAGS) -Wl,-Map,$(basename $@).map
-
-all: $(BUILD_DIR)/libUART.a
-
-$(BUILD_DIR):
-	mkdir -p $(addprefix $(BUILD_DIR)/$(SRC_DIR)/,$(sort $(dir $(wildcard ./*/*))))
-
-libUART.a: $(BUILD_DIR) $(PROJ_OBJS)
-	$(AR) -crsv $(BUILD_DIR)/$@ $(PROJ_OBJS)
-
-$(BUILD_DIR)/$(SRC_DIR)/%.o: %.c | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
+timers: 
+	$(MAKE) -C $(TIMER_SRC_DIR) libtimer
 
 clean:
-	rm -f $(BUILD_DIR)/libUART.a $(PROJ_OBJS)
+	$(MAKE) -C $(TIMER_SRC_DIR) clean
+	rm -rf $(SRC_BUILD_DIR)
 
 .PHONY: clean
 

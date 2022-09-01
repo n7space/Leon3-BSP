@@ -8,20 +8,35 @@ SIS_VERSION = 2.29
 
 TSIM = tsim-leon3
 
-AR = $(RTEMS_ROOT)/sparc-rtems6/bin/ar
-AS = $(RTEMS_ROOT)/sparc-rtems6/bin/as
-CC = $(RTEMS_CPU)-rtems$(RTEMS_API)-gcc
-LD = $(RTEMS_ROOT)/sparc-rtems6/bin/ld
-NM = $(RTEMS_ROOT)/sparc-rtems6/bin/nm
-OBJCOPY = $(RTEMS_ROOT)/sparc-rtems6/bin/objcopy
-RANLIB = $(RTEMS_ROOT)/sparc-rtems6/bin/ranlib
-SIZE = $(RTEMS_CPU)-rtems$(RTEMS_API)-size
-STRIP = $(RTEMS_ROOT)/sparc-rtems6/bin/strip
+CC = gcc
+G++ = g++
 
-PKG_CONFIG := $(RTEMS_ROOT)/lib/pkgconfig/$(RTEMS_CPU)-rtems$(RTEMS_API)-$(RTEMS_BSP).pc
+AR = ar
 
-DEPFLAGS = -MT $@ -MD -MP -MF $(basename $@).d
-WARNFLAGS = -Wall -Wextra
-OPTFLAGS = -O0
-ABI_FLAGS = $(shell pkg-config --cflags $(PKG_CONFIG))
-LDFLAGS = $(shell pkg-config --libs $(PKG_CONFIG))
+SRC_DIR = src
+BUILD_DIR = build
+TEST_DIR = test
+UNIT_TEST_DIR = unit
+INTEGRATION_TEST_DIR = integration
+SIS_MODULE_SRC_DIR = sis
+TIMER_SRC_DIR = timer
+UART_DIR = uart
+
+
+# AR = $(RTEMS_ROOT)/sparc-rtems6/bin/ar
+# AS = $(RTEMS_ROOT)/sparc-rtems6/bin/as
+# CC = $(RTEMS_CPU)-rtems$(RTEMS_API)-gcc
+# LD = $(RTEMS_ROOT)/sparc-rtems6/bin/ld
+# NM = $(RTEMS_ROOT)/sparc-rtems6/bin/nm
+# OBJCOPY = $(RTEMS_ROOT)/sparc-rtems6/bin/objcopy
+# RANLIB = $(RTEMS_ROOT)/sparc-rtems6/bin/ranlib
+# SIZE = $(RTEMS_CPU)-rtems$(RTEMS_API)-size
+# STRIP = $(RTEMS_ROOT)/sparc-rtems6/bin/strip
+
+# PKG_CONFIG := $(RTEMS_ROOT)/lib/pkgconfig/$(RTEMS_CPU)-rtems$(RTEMS_API)-$(RTEMS_BSP).pc
+
+# DEPFLAGS = -MT $@ -MD -MP -MF $(basename $@).d
+# WARNFLAGS = -Wall -Wextra
+# OPTFLAGS = -O0
+# ABI_FLAGS = $(shell pkg-config --cflags $(PKG_CONFIG))
+# LDFLAGS = $(shell pkg-config --libs $(PKG_CONFIG))
