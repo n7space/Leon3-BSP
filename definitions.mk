@@ -6,6 +6,14 @@ RTEMS_ROOT = /opt/rtems-6-sparc-gr712rc-smp-4
 SIS_NAME = sis
 SIS_VERSION = 2.29
 
+SRC_DIR = src
+BUILD_DIR = build
+TEST_DIR = test
+UNIT_TEST_DIR = unit
+INTEGRATION_TEST_DIR = integration
+SIS_MODULE_SRC_DIR = sis
+UART_SRC_DIR = Uart
+
 AR = $(RTEMS_ROOT)/sparc-rtems6/bin/ar
 AS = $(RTEMS_ROOT)/sparc-rtems6/bin/as
 CC = $(RTEMS_CPU)-rtems$(RTEMS_API)-gcc

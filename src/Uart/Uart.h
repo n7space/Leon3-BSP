@@ -41,22 +41,22 @@
 /// \brief Uart device identifiers.
 typedef enum
 {
-    Uart_Id_0 = 0,  ///< UART0 device
-    Uart_Id_1 = 1,  ///< UART1 device
-    Uart_Id_2 = 2,  ///< UART2 device
-    Uart_Id_3 = 3,  ///< UART3 device
-    Uart_Id_4 = 4,  ///< UART4 device
-    Uart_Id_5 = 5,  ///< UART5 device
-    Uart_Id_Max = 6 ///< Error value
+    Uart_Id_0 = 0,      ///< UART0 device
+    Uart_Id_1 = 1,      ///< UART1 device
+    Uart_Id_2 = 2,      ///< UART2 device
+    Uart_Id_3 = 3,      ///< UART3 device
+    Uart_Id_4 = 4,      ///< UART4 device
+    Uart_Id_5 = 5,      ///< UART5 device
+    Uart_Id_Invalid = 6 ///< Error value
 } Uart_Id;
 
 /// \brief Uart parity.
 typedef enum
 {
-    Uart_Parity_Even = 0, ///< Assume even parity bit
-    Uart_Parity_Odd = 1,  ///< Assume odd parity bit
-    Uart_Parity_None = 4, ///< Assume no parity
-    Uart_Parity_Max = 9   ///< Error value
+    Uart_Parity_None = 0,   ///< Assume no parity
+    Uart_Parity_Even = 1,   ///< Assume even parity bit
+    Uart_Parity_Odd = 2,    ///< Assume odd parity bit
+    Uart_Parity_Invalid = 9 ///< Error value
 } Uart_Parity;
 
 /// \brief Uart baud rate values.
@@ -75,7 +75,7 @@ typedef enum
     Uart_BaudRate_57600 = 57600,   ///< 57600 bauds
     Uart_BaudRate_576800 = 76800,  ///< 76800 bauds
     Uart_BaudRate_115200 = 115200, ///< 115200 bauds
-    Uart_BaudRate_Max = 0          ///< Error value
+    Uart_BaudRate_Invalid = 0      ///< Error value
 } Uart_BaudRate;
 
 /// \brief Enum representing error codes
@@ -97,13 +97,11 @@ typedef struct
     /// \brief Flag indicating whether the receiver should be enabled
     bool isRxEnabled;
     /// \brief Flag indicating whether to enable local loopback mode
-    bool isTestModeEnabled;
+    bool isLoopbackModeEnabled;
     /// \brief Indicator of used parity bit
     Uart_Parity parity;
     /// \brief Target baud rate
     Uart_BaudRate baudRate;
-    /// \brief Indicator of the baud rate clock source
-    uint32_t baudRateClkSrc;
     /// \brief Baud rate clock source frequency
     uint32_t baudRateClkFreq;
 } Uart_Config;
@@ -316,6 +314,9 @@ bool Uart_getLinkErrors(uint32_t statusRegister, Uart_ErrorFlags* errFlags);
 /// \param [in] uart Uart device descriptor.
 /// \returns The status register value.
 uint32_t Uart_getStatusRegister(const Uart* const uart);
+
+bool Uart_getFlag(const uint32_t uartRegister, const uint32_t flag);
+void Uart_setFlag(volatile uint32_t *const uartRegister, const bool set, const uint32_t flag);
 
 #endif // BSP_UART_H
 

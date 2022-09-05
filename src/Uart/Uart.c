@@ -49,7 +49,7 @@ getAddressBase(Uart_Id id)
         case Uart_Id_5:
             return (UartRegisters_t)Uart5_address;
         default:
-            return (UartRegisters_t)UartMax_address;
+            return (UartRegisters_t)UartInvalid_address;
     }
 }
 
@@ -73,9 +73,10 @@ getBaudRate(const Uart* const uart)
         case 57600:
         case 76800:
         case 115200:
-            return (Uart_BaudRate)baud;
+            return (Uart_BaudRate) baud;
+            break;
         default:
-            return Uart_BaudRate_Max;
+            return Uart_BaudRate_Invalid;
     }
 }
 
@@ -87,7 +88,6 @@ interruptNumber(Uart_Id id)
             return Uart0_interrupt;
         case Uart_Id_1:
             return Uart1_interrupt;
-#ifndef RTEMS_SIS
         case Uart_Id_2:
             return Uart2_interrupt;
         case Uart_Id_3:
@@ -96,9 +96,8 @@ interruptNumber(Uart_Id id)
             return Uart4_interrupt;
         case Uart_Id_5:
             return Uart5_interrupt;
-#endif
         default:
-            return UartMax_interrupt;
+            return UartInvalid_interrupt;
     }
 }
 
@@ -124,48 +123,34 @@ static Uart_ErrorHandler defaultErrorHandler = { .callback = emptyCallback,
 void
 Uart_setConfig(Uart* const uart, const Uart_Config* const config)
 {
-    if(config->isRxEnabled) {
-        uart->reg->control |= (UART_CONTROL_RE | UART_CONTROL_RI);
-        uart->reg->control &= ~UART_CONTROL_RF;
+    Uart_setFlag(&uart->reg->control, config->isRxEnabled, UART_RE);
+    Uart_setFlag(&uart->reg->control, config->isRxEnabled, UART_RI);
+    Uart_setFlag(&uart->reg->control, !config->isRxEnabled, UART_CTRL_RF);
+    Uart_setFlag(&uart->reg->control, config->isTxEnabled, UART_CTRL_TE);
+    Uart_setFlag(&uart->reg->control, config->isTxEnabled, UART_TI);
+    Uart_setFlag(&uart->reg->control, !config->isTxEnabled, UART_CRTL_TF);
+    Uart_setFlag(&uart->reg->control, config->isLoopbackModeEnabled, UART_LB);
+
+    if (config->parity != Uart_Parity_None && config->parity != Uart_Parity_Invalid) {
+        Uart_setFlag(&uart->reg->control, FLAG_SET, UART_CTRL_PE);
+        Uart_setFlag(&uart->reg->control, config->parity == Uart_Parity_Odd, UART_CTRL_PE);
     }
-    if(config->isTxEnabled) {
-        uart->reg->control |= (UART_CONTROL_TE | UART_CONTROL_TI);
-        uart->reg->control &= ~UART_CONTROL_TF;
-    }
-#ifndef RTEMS_SIS
-    switch(config->parity) {
-        case Uart_Parity_Even:
-            uart->reg->control |= UART_CONTROL_PE;
-            uart->reg->control &= ~UART_CONTROL_PS;
-            break;
-        case Uart_Parity_Odd:
-            uart->reg->control |= (UART_CONTROL_PE | UART_CONTROL_PS);
-            break;
-        case Uart_Parity_None:
-        default:
-            uart->reg->control &= ~UART_CONTROL_PE;
-            break;
-    }
-#endif
 }
 
 void
 Uart_getConfig(const Uart* const uart, Uart_Config* const config)
 {
-    config->isTxEnabled = (uart->reg->control & UART_CONTROL_TE) != 0;
-    config->isRxEnabled = (uart->reg->control & UART_CONTROL_RE) != 0;
-    config->isTestModeEnabled = (uart->reg->control & UART_CONTROL_LB) != 0;
-#ifndef RTEMS_SIS
-    if((uart->reg->control & UART_CONTROL_PE) == 0) {
-        config->parity = Uart_Parity_None;
-    } else if((uart->reg->control & UART_CONTROL_PS) != 0) {
-        config->parity = Uart_Parity_Odd;
+    config->isRxEnabled = Uart_getFlag(uart->reg->control, UART_RE);
+    config->isTxEnabled = Uart_getFlag(uart->reg->control, UART_CTRL_TE);
+    config->isLoopbackModeEnabled = Uart_getFlag(uart->reg->control, UART_LB);
+
+    if (Uart_getFlag (uart->reg->control, UART_CTRL_PE)) {
+        config->parity = Uart_getFlag(uart->reg->control, UART_PS) ? Uart_Parity_Odd : Uart_Parity_Even;
     } else {
-        config->parity = Uart_Parity_Even;
+        config->parity = Uart_Parity_None;
     }
+
     config->baudRate = getBaudRate(uart);
-#endif
-    config->baudRateClkSrc = GPTIMER_ADDRESS_BASE;
     config->baudRateClkFreq = rtems_clock_get_ticks_per_second();
 }
 
@@ -173,7 +158,7 @@ void
 Uart_startup(Uart* const uart)
 {
     uart->interruptData.sentBytes = 0;
-    uart->errorFlags = (Uart_ErrorFlags){ 0 };
+    uart->errorFlags = (Uart_ErrorFlags){0};
     rtems_interrupt_entry_initialize(
             &(uart->interruptData.rtemsInterruptEntry),
             (rtems_interrupt_handler)Uart_handleInterrupt,
@@ -189,12 +174,11 @@ void
 Uart_shutdown(Uart* const uart)
 {
     rtems_interrupt_vector_disable(interruptNumber(uart->id));
-    rtems_interrupt_entry_remove(interruptNumber(uart->id),
-                                 &(uart->interruptData.rtemsInterruptEntry));
+    rtems_interrupt_entry_remove(interruptNumber(uart->id), &(uart->interruptData.rtemsInterruptEntry));
     uart->reg->control = 0;
     uart->reg->status = 0;
     uart->interruptData.sentBytes = 0;
-    uart->errorFlags = (Uart_ErrorFlags){ 0 };
+    uart->errorFlags = (Uart_ErrorFlags){0};
 }
 
 void
@@ -202,9 +186,9 @@ Uart_init(Uart_Id id, Uart* const uart)
 {
     uart->id = id;
     uart->reg = getAddressBase(id);
-    uart->interruptData.rtemsInterruptEntry = (rtems_interrupt_entry){ 0 };
+    uart->interruptData.rtemsInterruptEntry = (rtems_interrupt_entry){0};
     uart->interruptData.sentBytes = 0;
-    uart->errorFlags = (Uart_ErrorFlags){ 0 };
+    uart->errorFlags = (Uart_ErrorFlags){0};
     uart->txHandler = defaultTxHandler;
     uart->rxHandler = defaultRxHandler;
     uart->errorHandler = defaultErrorHandler;
@@ -222,16 +206,16 @@ Uart_write(Uart* const uart,
 {
     rtems_interrupt_vector_disable(interruptNumber(uart->id));
     uint32_t timeout = timeoutLimit;
-    if(uart->txFifo == NULL) {
-        if((uart->reg->status & UART_STATUS_TE) != 0) {
+    if (uart->txFifo == NULL) {
+        if (Uart_getFlag(uart->reg->status, UART_TE)) {
             uart->reg->data = data;
         } else {
             *errCode = Uart_ErrorCode_TxFifoFull;
             rtems_interrupt_vector_enable(interruptNumber(uart->id));
             return false;
         }
-        while((timeoutLimit == 0) || timeout-- > 0) {
-            if((uart->reg->status & UART_STATUS_TS) != 0) {
+        while ((timeoutLimit == 0) || timeout-- > 0) {
+            if (Uart_getFlag(uart->reg->status, UART_TS)) {
                 rtems_interrupt_vector_enable(interruptNumber(uart->id));
                 return true;
             }
@@ -254,18 +238,18 @@ Uart_read(Uart* const uart,
 {
     rtems_interrupt_vector_disable(interruptNumber(uart->id));
     uint32_t timeout = timeoutLimit;
-    if(uart->rxFifo == NULL) {
+    if (uart->rxFifo == NULL) {
         rtems_interrupt_vector_enable(interruptNumber(uart->id));
         do {
-            if(uart->errorFlags.hasRxFifoFullErrorOccurred == true) {
+            if (uart->errorFlags.hasRxFifoFullErrorOccurred == true) {
                 *errCode = Uart_ErrorCode_RxFifoFull;
                 return false;
             }
-            if((uart->reg->status & UART_STATUS_DR) != 0) {
+            if (Uart_getFlag(uart->reg->status, UART_DR)) {
                 *data = uart->reg->data;
                 return true;
             }
-        } while((timeoutLimit == 0) || timeout-- > 0);
+        } while ((timeoutLimit == 0) || timeout-- > 0);
     } else {
         *errCode = Uart_ErrorCode_RxFifoNotNull;
         rtems_interrupt_vector_enable(interruptNumber(uart->id));
@@ -285,7 +269,7 @@ Uart_writeAsync(Uart* const uart,
     uart->txFifo = fifo;
     uart->txHandler = handler;
     uint8_t byte = '\0';
-    if((uart->reg->status & UART_STATUS_TE) != 0) {
+    if (Uart_getFlag(uart->reg->status, UART_TE)) {
         ByteFifo_pull(uart->txFifo, &byte);
         uart->reg->data = byte;
     }
@@ -342,69 +326,77 @@ Uart_getRxFifoCount(Uart* const uart)
 bool
 Uart_handleError(Uart* const uart)
 {
-    if(Uart_getLinkErrors(uart->reg->status, &uart->errorFlags) == true) {
+    bool result = false;
+
+    if (Uart_getLinkErrors(uart->reg->status, &uart->errorFlags) == true) {
         uart->errorHandler.callback(uart->errorHandler.arg);
-        return true;
+        result = true;
     }
-    return false;
+
+    return result;
 }
 
 bool
 Uart_handleRx(Uart* const uart)
 {
-    if((uart->reg->control & UART_CONTROL_RE) != 0
-       && (uart->reg->status & UART_STATUS_DR) != 0) {
-        if(uart->rxFifo != NULL) {
+    bool result = false;
+
+    if (Uart_getFlag(uart->reg->control, UART_RE) && Uart_getFlag(uart->reg->status, UART_DR)) {
+        if (uart->rxFifo != NULL) {
             uint8_t buf = uart->reg->data;
-            if(ByteFifo_isFull(uart->rxFifo) == true) {
+            if (ByteFifo_isFull(uart->rxFifo)) {
                 uart->errorFlags.hasRxFifoFullErrorOccurred = true;
-                return true;
+                result = true;
+            } else {
+                if (buf == uart->rxHandler.targetCharacter) {
+                    uart->rxHandler.characterCallback(uart->rxHandler.characterArg);
+                }
+                uart->interruptData.sentBytes++;
+                if (uart->interruptData.sentBytes == uart->rxHandler.targetLength) {
+                    uart->interruptData.sentBytes = 0;
+                    uart->rxHandler.lengthCallback(uart->rxHandler.lengthArg);
+                }
+                ByteFifo_push(uart->rxFifo, buf);
             }
-            if(buf == uart->rxHandler.targetCharacter) {
-                uart->rxHandler.characterCallback(uart->rxHandler.characterArg);
-            }
-            uart->interruptData.sentBytes++;
-            if(uart->interruptData.sentBytes == uart->rxHandler.targetLength) {
-                uart->interruptData.sentBytes = 0;
-                uart->rxHandler.lengthCallback(uart->rxHandler.lengthArg);
-            }
-            ByteFifo_push(uart->rxFifo, buf);
         }
-        return true;
+        result = true;
     }
-    return false;
+
+    return result;
 }
 
 bool
 Uart_handleTx(Uart* const uart)
 {
-    if((uart->reg->control & UART_CONTROL_TE) != 0
-       && (uart->reg->status & UART_STATUS_TE) != 0) {
-        if(uart->txFifo != NULL) {
+    bool result = false;
+
+    if (Uart_getFlag(uart->reg->control, UART_CTRL_TE) && Uart_getFlag(uart->reg->status, UART_TE)) {
+        if (uart->txFifo != NULL) {
             uint8_t buf = '\0';
-            if(ByteFifo_isEmpty(uart->txFifo) == false) {
+            if (!ByteFifo_isEmpty(uart->txFifo)) {
                 ByteFifo_pull(uart->txFifo, &buf);
                 uart->reg->data = buf;
-                if(ByteFifo_isEmpty(uart->txFifo) == true) {
+                if (ByteFifo_isEmpty(uart->txFifo)) {
                     uart->txHandler.callback(uart->txHandler.arg);
                 }
             }
         }
-        return true;
+        result = true;
     }
-    return false;
+
+    return result;
 }
 
 void
 Uart_handleInterrupt(Uart* const uart)
 {
-    if(Uart_handleError(uart) == true) {
+    if (Uart_handleError(uart) == true) {
         return;
     }
-    if(Uart_handleRx(uart) == true) {
+    if (Uart_handleRx(uart) == true) {
         return;
     }
-    if(Uart_handleTx(uart) == true) {
+    if (Uart_handleTx(uart) == true) {
         return;
     }
 }
@@ -420,28 +412,41 @@ Uart_registerErrorHandler(Uart* const uart, const Uart_ErrorHandler handler)
 inline bool
 Uart_getLinkErrors(uint32_t statusRegister, Uart_ErrorFlags* errFlags)
 {
-    if((statusRegister & UART_STATUS_OV) != 0) {
-        errFlags->hasOverrunOccurred = true;
+    bool result = false;
+
+    errFlags->hasOverrunOccurred = Uart_getFlag(statusRegister, UART_OV);
+    errFlags->hasParityErrorOccurred = Uart_getFlag(statusRegister, UART_PE);
+    errFlags->hasFramingErrorOccurred = Uart_getFlag(statusRegister, UART_FE);
+    errFlags->hasRxFifoFullErrorOccurred = Uart_getFlag(statusRegister, UART_RF);
+
+    if (errFlags->hasOverrunOccurred ||
+        errFlags->hasParityErrorOccurred ||
+        errFlags->hasFramingErrorOccurred ||
+        errFlags->hasRxFifoFullErrorOccurred) {
+        result = true;
     }
-    if((statusRegister & UART_STATUS_PE) != 0) {
-        errFlags->hasParityErrorOccurred = true;
-    }
-    if((statusRegister & UART_STATUS_FE) != 0) {
-        errFlags->hasFramingErrorOccurred = true;
-    }
-    if((statusRegister & UART_STATUS_RF) != 0) {
-        errFlags->hasRxFifoFullErrorOccurred = true;
-    }
-    if(errFlags->hasOverrunOccurred || errFlags->hasParityErrorOccurred
-       || errFlags->hasFramingErrorOccurred
-       || errFlags->hasRxFifoFullErrorOccurred) {
-        return true;
-    }
-    return false;
+    
+    return result;
 }
 
 inline uint32_t
 Uart_getStatusRegister(const Uart* const uart)
 {
     return uart->reg->status;
+}
+
+bool
+Uart_getFlag(const uint32_t uartRegister, const uint32_t flag)
+{
+    return (bool) ((uartRegister >> flag) & FLAG_MASK);
+}
+
+void
+Uart_setFlag(volatile uint32_t *const uartRegister, const bool set, const uint32_t flag)
+{
+    if (set) {
+        *uartRegister |= (FLAG_MASK << flag);
+    } else {
+        *uartRegister &= ~(FLAG_MASK << flag);
+    }
 }
