@@ -102,7 +102,7 @@ interruptNumber(Uart_Id id)
 }
 
 static inline void
-emptyCallback(void* arg)
+emptyCallback(volatile void* arg)
 {
     (void)arg;
 }
@@ -207,19 +207,14 @@ Uart_write(Uart* const uart,
     rtems_interrupt_vector_disable(interruptNumber(uart->id));
     uint32_t timeout = timeoutLimit;
     if (uart->txFifo == NULL) {
-        if (Uart_getFlag(uart->reg->status, UART_TE)) {
-            uart->reg->data = data;
-        } else {
-            *errCode = Uart_ErrorCode_TxFifoFull;
-            rtems_interrupt_vector_enable(interruptNumber(uart->id));
-            return false;
-        }
         while ((timeoutLimit == 0) || timeout-- > 0) {
             if (Uart_getFlag(uart->reg->status, UART_TS)) {
+                uart->reg->data = data;
                 rtems_interrupt_vector_enable(interruptNumber(uart->id));
                 return true;
             }
         }
+        return false;
     } else {
         *errCode = Uart_ErrorCode_TxFifoNotNull;
         rtems_interrupt_vector_enable(interruptNumber(uart->id));
@@ -269,7 +264,7 @@ Uart_writeAsync(Uart* const uart,
     uart->txFifo = fifo;
     uart->txHandler = handler;
     uint8_t byte = '\0';
-    if (Uart_getFlag(uart->reg->status, UART_TE)) {
+    if (Uart_getFlag(uart->reg->status, UART_TS)) {
         ByteFifo_pull(uart->txFifo, &byte);
         uart->reg->data = byte;
     }
@@ -370,7 +365,7 @@ Uart_handleTx(Uart* const uart)
 {
     bool result = false;
 
-    if (Uart_getFlag(uart->reg->control, UART_CTRL_TE) && Uart_getFlag(uart->reg->status, UART_TE)) {
+    if (Uart_getFlag(uart->reg->control, UART_CTRL_TE) && Uart_getFlag(uart->reg->status, UART_TS)) {
         if (uart->txFifo != NULL) {
             uint8_t buf = '\0';
             if (!ByteFifo_isEmpty(uart->txFifo)) {
@@ -390,15 +385,9 @@ Uart_handleTx(Uart* const uart)
 void
 Uart_handleInterrupt(Uart* const uart)
 {
-    if (Uart_handleError(uart) == true) {
-        return;
-    }
-    if (Uart_handleRx(uart) == true) {
-        return;
-    }
-    if (Uart_handleTx(uart) == true) {
-        return;
-    }
+    Uart_handleError(uart);
+    Uart_handleRx(uart);
+    Uart_handleTx(uart);
 }
 
 void

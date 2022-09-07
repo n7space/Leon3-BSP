@@ -25,4 +25,4 @@ clean:
 
 .PHONY: clean
 
-.DEFAULT_GOAL := libtimer
+.DEFAULT_GOAL := libuart

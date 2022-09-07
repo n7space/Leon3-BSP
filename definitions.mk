@@ -13,10 +13,13 @@ UNIT_TEST_DIR = unit
 INTEGRATION_TEST_DIR = integration
 SIS_MODULE_SRC_DIR = sis
 UART_SRC_DIR = Uart
+UTILS_SRC_DIR = Utils
+SYSTEM_CONFIG_SRC_DIR = SystemConfig
 
 AR = $(RTEMS_ROOT)/sparc-rtems6/bin/ar
 AS = $(RTEMS_ROOT)/sparc-rtems6/bin/as
 CC = $(RTEMS_CPU)-rtems$(RTEMS_API)-gcc
+CXX = $(RTEMS_CPU)-rtems$(RTEMS_API)-g++
 LD = $(RTEMS_ROOT)/sparc-rtems6/bin/ld
 NM = $(RTEMS_ROOT)/sparc-rtems6/bin/nm
 OBJCOPY = $(RTEMS_ROOT)/sparc-rtems6/bin/objcopy

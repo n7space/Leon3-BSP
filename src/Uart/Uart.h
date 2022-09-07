@@ -114,23 +114,23 @@ typedef struct
 } Uart_InterruptData;
 
 /// \brief A function serving as a callback called at the end of transmission.
-typedef void (*UartTxEndCallback)(void* arg);
+typedef void (*UartTxEndCallback)(volatile void* arg);
 
 /// \brief A descriptor of an end-of-transmission event handler.
 typedef struct
 {
     UartTxEndCallback callback; ///< Callback function
-    void* arg;                  ///< Argument to the callback function
+    volatile void* arg;         ///< Argument to the callback function
 } Uart_TxHandler;
 
 /// \brief A function serving as a callback called upon a reception of a byte
 ///        if the reception queue contains at least a number of bytes specified
 ///        in the handler descriptor.
-typedef void (*UartRxEndLengthCallback)(void* arg);
+typedef void (*UartRxEndLengthCallback)(volatile void* arg);
 
 /// \brief A function serving as a callback called upon a reception of a byte if
 ///        byte matches a target specified in the handler descriptor.
-typedef void (*UartRxEndCharacterCallback)(void* arg);
+typedef void (*UartRxEndCharacterCallback)(volatile void* arg);
 
 /// \brief A descriptor of a byte reception event handler.
 typedef struct
@@ -141,9 +141,9 @@ typedef struct
     /// \brief Callback called when a targetCharacter is received
     UartRxEndCharacterCallback characterCallback;
     /// \brief Argument for the length callback
-    void* lengthArg;
+    volatile void* lengthArg;
     /// \brief Argument for the character callback
-    void* characterArg;
+    volatile void* characterArg;
     /// \brief Target character, upon reception of which character callback
     /// is called
     uint8_t targetCharacter;
@@ -154,7 +154,7 @@ typedef struct
 
 /// \brief A function serving as a callback called upon detection of an error by
 ///        hardware.
-typedef void (*UartErrorCallback)(void* arg);
+typedef void (*UartErrorCallback)(volatile void* arg);
 
 /// \brief A descriptor of an error handler.
 typedef struct

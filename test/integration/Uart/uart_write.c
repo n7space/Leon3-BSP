@@ -24,44 +24,58 @@
 /// \brief Run functionality tests
 
 #include <stdbool.h>
+#include <string.h>
 #include "SystemConfig.h"
 #include "Uart.h"
-#include "function_tests/Uart/test_Uart_init.h"
-#include "function_tests/Uart/test_Uart_write.h"
-#include "function_tests/Uart/test_Uart_read.h"
-#include "function_tests/Uart/test_Uart_writeAsync.h"
-#include "function_tests/Uart/test_Uart_readAsync.h"
 #include <rtems.h>
 #include <rtems/confdefs.h>
+#include <rtems/bspIo.h>
+
+#define SUCCESS_LENGTH 8
+#define FAILED_LENGHT 7
+#define WRITE_TIMEOUT 100000
 
 static Uart uart0;
 
-int
-main()
+static Uart_ErrorCode errCode = Uart_ErrorCode_OK;
+static uint8_t data[] = "Write text (sync)\r\n";
+
+void sendMsg (const char *msg, int size)
 {
-    if(!test_Uart_init(Uart_Id_0, &uart0)) {
-        return -1;
+    for (size_t i = 0; i < size; i++) {
+      Uart_write(&uart0, msg[i], WRITE_TIMEOUT, &errCode);
     }
-    if(!test_Uart_write(&uart0)) {
-        return -1;
+}
+
+bool
+test_Uart_write(Uart* uart)
+{
+    bool result = false;
+
+    Uart_init(Uart_Id_0, uart);
+    Uart_Config config = (Uart_Config){0};
+    config.isTxEnabled = true;
+    config.isRxEnabled = true;
+    Uart_setConfig(uart, &config);
+    Uart_startup(uart);
+    for (int i = 0; i < 20 && data[i] != 0; i++) {
+        Uart_write(uart, data[i], WRITE_TIMEOUT, &errCode);
     }
-    if(!test_Uart_writeAsync(&uart0)) {
-        return -1;
+    
+    if (errCode == 0) {
+        sendMsg("Success\n", SUCCESS_LENGTH);
+        result = true;
     }
-    if(!test_Uart_read(&uart0)) {
-        return -1;
-    }
-    if(!test_Uart_readAsync(&uart0)) {
-        return -1;
-    }
-    return 0;
+    Uart_shutdown(uart);
+
+    return result;
 }
 
 rtems_task
 Init(rtems_task_argument arg)
 {
     (void)arg;
-    rtems_fatal(RTEMS_FATAL_SOURCE_EXIT, main());
+    rtems_fatal(RTEMS_FATAL_SOURCE_EXIT, test_Uart_write(&uart0));
 }
 
 /** @} */

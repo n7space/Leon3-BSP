@@ -1,11 +1,14 @@
 include ../../definitions.mk
 
-all: check uart_check
+all: uart_integration_test
 
-check:
+uart_integration_test:
+	$(MAKE) -C $(UART_SRC_DIR) check
+	$(MAKE) -C $(UART_SRC_DIR) clean
 
-uart_check:
-	$(MAKE) -C $(UART_TEST_DIR) check
+clean:
+	$(MAKE) -C $(UART_SRC_DIR) clean
+	rm -rf $(INTEGRATION_TEST_DIR)
 
 .PHONY: clean
 

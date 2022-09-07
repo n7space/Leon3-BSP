@@ -1,42 +1,65 @@
-include ../definitions.mk
+ROOT_PATH = ../../..
 
-SRC_DIR = ../src
-BUILD_DIR = ../build
-TEST_DIR = test
+include $(ROOT_PATH)/definitions.mk
+
 TEST := test.exe
 
-FUNCTION_TESTS_DIR = function_tests
-FUNCTION_TEST_SRC = $(wildcard $(FUNCTION_TESTS_DIR)/**/*.c)
-FUNCTION_TESTS = $(addprefix $(BUILD_DIR)/$(TEST_DIR)/,$(patsubst %.c,%.o,$(FUNCTION_TEST_SRC)))
+CFLAGS = -g -O2 $(shell pkg-config --cflags $(PKG_CONFIG))
+CCLINK = $(CC) $(CFLAGS) -Wl,-Map,$(BUILD_DIR)/$(basename $@).map
 
-INCL = $(SRC_DIR)/ $(sort $(dir $(wildcard $(SRC_DIR)/**/*.h))) $(sort $(dir $(wildcard $(FUNCTION_TESTS_DIR)/**/*.h)))
-STATIC_LIBS = -Wl,-Bstatic $(BUILD_DIR)/libuart.a
+INCL = $(addprefix -I,$(sort $(dir $(wildcard ./$(ROOT_PATH)/$(SRC_DIR)/$(UART_SRC_DIR)/*.h) \
+       $(wildcard ./$(ROOT_PATH)/$(SRC_DIR)/$(UTILS_SRC_DIR)/*.h)  \
+       $(wildcard ./$(ROOT_PATH)/$(SRC_DIR)/$(SYSTEM_CONFIG_SRC_DIR)/*.h))))
 
-CFLAGS = -g -O2 $(shell pkg-config --cflags $(PKG_CONFIG)) $(addprefix -I,$(INCL))
-CCLINK = $(CC) $(CFLAGS) -Wl,-Map,$(basename $@).map
+STATIC_LIBS = -Wl,-Bstatic $(ROOT_PATH)/$(BUILD_DIR)/$(SRC_DIR)/$(UART_SRC_DIR)/libuart.a
 
-all: test
+UART_WRITE_ASYNC_OBJ = $(patsubst %.c,$(BUILD_DIR)/%.o, uart_write_async.c)
+UART_READ_ASYNC_OBJ = $(patsubst %.c,$(BUILD_DIR)/%.o, uart_read_async.c)
+UART_READ_OBJ = $(patsubst %.c,$(BUILD_DIR)/%.o, uart_read.c)
+UART_WRITE_OBJ = $(patsubst %.c,$(BUILD_DIR)/%.o, uart_write.c)
 
-test: $(BUILD_DIR)/$(TEST)
+UART_FILE = uart
+SIS_BINARY = $(ROOT_PATH)/$(SIS_MODULE_SRC_DIR)/$(BUILD_DIR)/$(SRC_DIR)/$(SIS_NAME)-$(SIS_VERSION)
+SIS_PARAMETERS = -leon3 -d 10 -freq 100 -m 4 -r -v -uart1 $(UART_FILE)
 
-$(BUILD_DIR)/libuart.a:
-	$(MAKE) -C $(SRC_DIR) libuart
+all: check
 
-$(BUILD_DIR)/$(TEST_DIR):
-	mkdir -p $(addprefix $(BUILD_DIR)/$(TEST_DIR)/,$(sort $(dir $(wildcard $(FUNCTION_TESTS_DIR)/**/*.h))))
+check: uart_read uart_read_async uart_write uart_write_async
+# uart_read uart_read_async uart_write uart_write_async
 
-$(BUILD_DIR)/$(TEST_DIR)/main.o : main.c | $(BUILD_DIR)/$(TEST_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
 
-$(BUILD_DIR)/$(TEST_DIR)/$(FUNCTION_TESTS_DIR)/%.o : $(FUNCTION_TESTS_DIR)/%.c | $(BUILD_DIR)/$(TEST_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(BUILD_DIR)/$(TEST): $(BUILD_DIR)/libuart $(FUNCTION_TESTS) $(BUILD_DIR)/$(TEST_DIR)/main.o
-	$(CCLINK) $(PROJ_OBJS) $(FUNCTION_TESTS) $(BUILD_DIR)/$(TEST_DIR)/main.o $(STATIC_LIBS) $(LDFLAGS) $(addprefix -I,$(TEST_INCL)) -o $@
+$(BUILD_DIR)/%.o: %.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CONFIG) $(DEFS) $(INCL) -c $< -o $@
 
 clean:
-	rm -f $(FUNCTION_TESTS) $(BUILD_DIR)/$(TEST_DIR)/main.o $(BUILD_DIR)/$(TEST)
+	rm -rf $(BUILD_DIR) $(UART_FILE)
 
 .PHONY: clean
 
 .DEFAULT_GOAL := all
+
+uart_read: $(UART_READ_OBJ)
+	$(CCLINK) $(UART_READ_OBJ) $(STATIC_LIBS) $(LDFLAGS) -o $(BUILD_DIR)/$(TEST)
+	$(SIS_BINARY) $(SIS_PARAMETERS) $(BUILD_DIR)/$(TEST)
+	grep -q "Success" $(UART_FILE)
+	rm -rf $(BUILD_DIR)/* $(UART_FILE)
+
+uart_read_async: $(UART_READ_ASYNC_OBJ)
+	$(CCLINK) $(UART_READ_ASYNC_OBJ) $(STATIC_LIBS) $(LDFLAGS) -o $(BUILD_DIR)/$(TEST)
+	$(SIS_BINARY) $(SIS_PARAMETERS) $(BUILD_DIR)/$(TEST)
+	grep -q "Success" $(UART_FILE)
+	rm -rf $(BUILD_DIR)/* $(UART_FILE)
+
+uart_write: $(UART_WRITE_OBJ)
+	$(CCLINK) $(UART_WRITE_OBJ) $(STATIC_LIBS) $(LDFLAGS) -o $(BUILD_DIR)/$(TEST)
+	$(SIS_BINARY) $(SIS_PARAMETERS) $(BUILD_DIR)/$(TEST)
+	grep -q "Success" $(UART_FILE)
+	rm -rf $(BUILD_DIR)/* $(UART_FILE)
+
+uart_write_async: $(UART_WRITE_ASYNC_OBJ)
+	$(CCLINK) $(UART_WRITE_ASYNC_OBJ) $(STATIC_LIBS) $(LDFLAGS) -o $(BUILD_DIR)/$(TEST)
+	$(SIS_BINARY) $(SIS_PARAMETERS) $(BUILD_DIR)/$(TEST)
+	grep -q "Success" $(UART_FILE)
+	rm -rf $(BUILD_DIR)/* $(UART_FILE)

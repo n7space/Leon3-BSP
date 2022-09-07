@@ -1,6 +1,6 @@
 include definitions.mk
 
-all: sis_module uart
+all: sis_module uart tests
 
 sis_module: 
 	$(MAKE) -C $(SIS_MODULE_SRC_DIR) sis
@@ -8,21 +8,12 @@ sis_module:
 uart:
 	$(MAKE) -C $(SRC_DIR) uart
 
-tests: uart
-	$(MAKE) -C $(TEST_DIR) tests
-	
-uart_unit_check: tests
-	$(MAKE) -C $(TEST_DIR) uart_unit_check
-
-unit_check: tests
-	$(MAKE) -C $(TEST_DIR) unit_check
-
-integration_check:
-
-check: unit_check integration_check
+uart_integration_test: sis_module uart 
+	$(MAKE) -C $(TEST_DIR) uart_integration_test
 
 clean:
 	$(MAKE) -C $(SIS_MODULE_SRC_DIR) clean
+	$(MAKE) -C $(TEST_DIR) clean
 	$(MAKE) -C $(SRC_DIR) clean
 	rm -rf $(BUILD_DIR)
 
