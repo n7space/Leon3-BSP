@@ -16,6 +16,9 @@ UART_SRC_DIR = Uart
 UTILS_SRC_DIR = Utils
 SYSTEM_CONFIG_SRC_DIR = SystemConfig
 
+G++ = g++
+GCC = gcc
+
 AR = $(RTEMS_ROOT)/sparc-rtems6/bin/ar
 AS = $(RTEMS_ROOT)/sparc-rtems6/bin/as
 CC = $(RTEMS_CPU)-rtems$(RTEMS_API)-gcc

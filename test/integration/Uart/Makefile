@@ -25,7 +25,6 @@ SIS_PARAMETERS = -leon3 -d 10 -freq 100 -m 4 -r -v -uart1 $(UART_FILE)
 all: check
 
 check: uart_read uart_read_async uart_write uart_write_async
-# uart_read uart_read_async uart_write uart_write_async
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
