@@ -5,6 +5,10 @@ all: test
 uart_integration_test:
 	$(MAKE) -C $(INTEGRATION_TEST_DIR) uart_integration_test
 
+uart_unit_test:
+	$(MAKE) -C $(UNIT_TEST_DIR) uart_unit_test
+	
+
 clean:
 	$(MAKE) -C $(INTEGRATION_TEST_DIR) clean
 	rm -rf $(TEST_DIR)

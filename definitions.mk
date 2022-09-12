@@ -11,6 +11,7 @@ BUILD_DIR = build
 TEST_DIR = test
 UNIT_TEST_DIR = unit
 INTEGRATION_TEST_DIR = integration
+MOCK_DIR = mock
 SIS_MODULE_SRC_DIR = sis
 UART_SRC_DIR = Uart
 UTILS_SRC_DIR = Utils
@@ -18,6 +19,7 @@ SYSTEM_CONFIG_SRC_DIR = SystemConfig
 
 G++ = g++
 GCC = gcc
+GAR = ar
 
 AR = $(RTEMS_ROOT)/sparc-rtems6/bin/ar
 AS = $(RTEMS_ROOT)/sparc-rtems6/bin/as

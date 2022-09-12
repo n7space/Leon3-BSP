@@ -3,7 +3,6 @@ include ../../definitions.mk
 UART_LIB_BUILD_DIR = ../../$(BUILD_DIR)/$(SRC_DIR)/$(UART_SRC_DIR)
 
 CFLAGS = -g $(DEPFLAGS) $(WARNFLAGS) $(ABI_FLAGS) $(OPTFLAGS) -DRTEMS_API_$(RTEMS_API) -DRTEMS_SIS
-CCLINK = $(CC) $(CFLAGS) -Wl,-Map,$(basename $@).map
 
 SRC = $(wildcard ./*.c)
 INCL = $(addprefix -I,$(sort $(dir $(wildcard ./*.h) $(wildcard ./../Utils/*.h) $(wildcard ./../SystemConfig/*.h))))

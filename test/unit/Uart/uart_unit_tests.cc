@@ -4,11 +4,19 @@ extern "C" {
 #include "Uart.h"
 }
 
-TEST_GROUP(UartTest)
+TEST_GROUP(UartTests)
 {
 };
 
-TEST(UartTest, ExampleTest)
+TEST(UartTests, ShouldSetProperFlagTo32BitRegister)
 {
-    CHECK_EQUAL(1, 1);
+    volatile uint32_t testRegister = 0;
+    uint32_t flagOffset = 2;
+    uint32_t properSetResult = 4;
+    uint32_t properResetResult = 0;
+
+    Uart_setFlag(&testRegister, FLAG_SET, flagOffset);
+    CHECK_EQUAL(testRegister, properSetResult);
+    Uart_setFlag(&testRegister, FLAG_RESET, flagOffset);
+    CHECK_EQUAL(testRegister, properResetResult);
 }
