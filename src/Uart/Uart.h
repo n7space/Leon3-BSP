@@ -34,8 +34,9 @@
 
 #include <UartRegisters.h>
 #include <ByteFifo.h>
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <stdlib.h>
 #include <rtems.h>
 
 /// \brief Uart device identifiers.

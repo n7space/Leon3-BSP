@@ -133,7 +133,7 @@ Uart_setConfig(Uart* const uart, const Uart_Config* const config)
 
     if (config->parity != Uart_Parity_None && config->parity != Uart_Parity_Invalid) {
         Uart_setFlag(&uart->reg->control, FLAG_SET, UART_CTRL_PE);
-        Uart_setFlag(&uart->reg->control, config->parity == Uart_Parity_Odd, UART_CTRL_PE);
+        Uart_setFlag(&uart->reg->control, config->parity == Uart_Parity_Odd, UART_PS);
     }
 }
 
@@ -185,7 +185,11 @@ void
 Uart_init(Uart_Id id, Uart* const uart)
 {
     uart->id = id;
+#ifndef UNIT_TESTS
     uart->reg = getAddressBase(id);
+#else
+    uart->reg = malloc(sizeof(UartRegisters_t));
+#endif
     uart->interruptData.rtemsInterruptEntry = (rtems_interrupt_entry){0};
     uart->interruptData.sentBytes = 0;
     uart->errorFlags = (Uart_ErrorFlags){0};
