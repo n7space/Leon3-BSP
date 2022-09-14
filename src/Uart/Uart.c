@@ -308,7 +308,7 @@ uint32_t
 Uart_getTxFifoCount(Uart* const uart)
 {
     rtems_interrupt_vector_disable(interruptNumber(uart->id));
-    bool result = ByteFifo_getCount(uart->txFifo);
+    uint32_t result = ByteFifo_getCount(uart->txFifo);
     rtems_interrupt_vector_enable(interruptNumber(uart->id));
     return result;
 }
@@ -317,7 +317,7 @@ uint32_t
 Uart_getRxFifoCount(Uart* const uart)
 {
     rtems_interrupt_vector_disable(interruptNumber(uart->id));
-    bool result = ByteFifo_getCount(uart->rxFifo);
+    uint32_t result = ByteFifo_getCount(uart->rxFifo);
     rtems_interrupt_vector_enable(interruptNumber(uart->id));
     return result;
 }
@@ -420,12 +420,6 @@ Uart_getLinkErrors(uint32_t statusRegister, Uart_ErrorFlags* errFlags)
     }
     
     return result;
-}
-
-inline uint32_t
-Uart_getStatusRegister(const Uart* const uart)
-{
-    return uart->reg->status;
 }
 
 bool

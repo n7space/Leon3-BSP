@@ -311,11 +311,6 @@ void Uart_handleInterrupt(Uart* const uart);
 /// \retval false  no hardware errors
 bool Uart_getLinkErrors(uint32_t statusRegister, Uart_ErrorFlags* errFlags);
 
-/// \brief Reads Uart device status register.
-/// \param [in] uart Uart device descriptor.
-/// \returns The status register value.
-uint32_t Uart_getStatusRegister(const Uart* const uart);
-
 bool Uart_getFlag(const uint32_t uartRegister, const uint32_t flag);
 void Uart_setFlag(volatile uint32_t *const uartRegister, const bool set, const uint32_t flag);
 
