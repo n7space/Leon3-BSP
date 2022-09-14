@@ -311,7 +311,17 @@ void Uart_handleInterrupt(Uart* const uart);
 /// \retval false  no hardware errors
 bool Uart_getLinkErrors(uint32_t statusRegister, Uart_ErrorFlags* errFlags);
 
+/// \brief Checks flag status in provided uart register.
+/// \param [in] uartRegister uart register with status or control flags
+/// \param [in] flag checked register flag offset
+/// \retval true   tested flag is set
+/// \retval false  tested flag isn't set
 bool Uart_getFlag(const uint32_t uartRegister, const uint32_t flag);
+
+/// \brief Sets flag status in provided uart register.
+/// \param [in] uartRegister uart register with status or control flags
+/// \param [in] set flag value to be set
+/// \param [in] flag register flag offset
 void Uart_setFlag(volatile uint32_t *const uartRegister, const bool set, const uint32_t flag);
 
 #endif // BSP_UART_H
