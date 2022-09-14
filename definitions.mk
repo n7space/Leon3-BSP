@@ -21,12 +21,12 @@ G++ = g++
 GCC = gcc
 GAR = ar
 
-AR = $(RTEMS_ROOT)/sparc-rtems6/bin/ar
-AS = $(RTEMS_ROOT)/sparc-rtems6/bin/as
+AR = $(RTEMS_CPU)-rtems$(RTEMS_API)-ar
+AS = $(RTEMS_CPU)-rtems$(RTEMS_API)-as
 CC = $(RTEMS_CPU)-rtems$(RTEMS_API)-gcc
 CXX = $(RTEMS_CPU)-rtems$(RTEMS_API)-g++
-LD = $(RTEMS_ROOT)/sparc-rtems6/bin/ld
-NM = $(RTEMS_ROOT)/sparc-rtems6/bin/nm
+LD = $(RTEMS_CPU)-rtems$(RTEMS_API)-ld
+NM = $(RTEMS_CPU)-rtems$(RTEMS_API)-nm
 OBJCOPY = $(RTEMS_ROOT)/sparc-rtems6/bin/objcopy
 RANLIB = $(RTEMS_ROOT)/sparc-rtems6/bin/ranlib
 SIZE = $(RTEMS_CPU)-rtems$(RTEMS_API)-size
