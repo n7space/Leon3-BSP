@@ -5,7 +5,7 @@ include $(ROOT_PATH)/definitions.mk
 TEST := test.exe
 
 CFLAGS = -g -O2 $(shell pkg-config --cflags $(PKG_CONFIG))
-CCLINK = $(CC) $(CFLAGS) -Wl,-Map,$(BUILD_DIR)/$(basename $@).map
+CCLINK = $(SPARC_CC) $(CFLAGS) -Wl,-Map,$(BUILD_DIR)/$(basename $@).map
 
 INCL = $(addprefix -I,$(sort $(dir $(wildcard ./$(ROOT_PATH)/$(SRC_DIR)/$(UART_SRC_DIR)/*.h) \
        $(wildcard ./$(ROOT_PATH)/$(SRC_DIR)/$(UTILS_SRC_DIR)/*.h)  \
@@ -30,7 +30,7 @@ $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
 $(BUILD_DIR)/%.o: %.c | $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(CONFIG) $(DEFS) $(INCL) -c $< -o $@
+	$(SPARC_CC) $(CFLAGS) $(CONFIG) $(DEFS) $(INCL) -c $< -o $@
 
 clean:
 	rm -rf $(BUILD_DIR) $(UART_FILE)

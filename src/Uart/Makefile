@@ -11,13 +11,13 @@ OBJECTS = $(patsubst %.c,$(UART_LIB_BUILD_DIR)/%.o, $(SRC))
 all: libuart
 
 libuart: $(OBJECTS)
-	$(AR) -crsv $(UART_LIB_BUILD_DIR)/$@.a $(OBJECTS)
+	$(SPARC_AR) -crsv $(UART_LIB_BUILD_DIR)/$@.a $(OBJECTS)
 
 $(UART_LIB_BUILD_DIR):
 	mkdir -p $(UART_LIB_BUILD_DIR)
 
 $(UART_LIB_BUILD_DIR)/%.o: %.c | $(UART_LIB_BUILD_DIR)
-	$(CC) $(CONFIG) $(DEFS) $(INCL) $(CFLAGS) -c -o $@ $<
+	$(SPARC_CC) $(CONFIG) $(DEFS) $(INCL) $(CFLAGS) -c -o $@ $<
 
 clean:
 	rm -rf $(OBJECTS) $(UART_LIB_BUILD_DIR)
