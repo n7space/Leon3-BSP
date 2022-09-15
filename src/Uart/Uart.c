@@ -3,24 +3,20 @@
  *
  * @copyright 2022 N7 Space Sp. z o.o.
  *
- * Test Environment was developed under a programme of,
- * and funded by, the European Space Agency (the "ESA").
+ * Leon3 BSP for the Test Environment is free software: you can redistribute 
+ * it and/or modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of the License,
+ * or (at your option) any later version.
  *
+ * Leon3 BSP for the Test Environment is distributed in the hope
+ * that it will be useful, but WITHOUT ANY WARRANTY; without even
+ * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
  *
- * Licensed under the ESA Public License (ESA-PL) Permissive,
- * Version 2.3 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     https://essr.esa.int/license/list
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * You should have received a copy of the GNU General Public License
+ * along with Leon3 BSP for the Test Environment. If not,
+ * see <http://www.gnu.org/licenses/>.
  */
-
 /// \brief Uart hardware driver implementation.
 
 #include <stdbool.h>
@@ -123,29 +119,29 @@ static Uart_ErrorHandler defaultErrorHandler = { .callback = emptyCallback,
 void
 Uart_setConfig(Uart* const uart, const Uart_Config* const config)
 {
-    Uart_setFlag(&uart->reg->control, config->isRxEnabled, UART_RE);
-    Uart_setFlag(&uart->reg->control, config->isRxEnabled, UART_RI);
-    Uart_setFlag(&uart->reg->control, !config->isRxEnabled, UART_CTRL_RF);
-    Uart_setFlag(&uart->reg->control, config->isTxEnabled, UART_CTRL_TE);
-    Uart_setFlag(&uart->reg->control, config->isTxEnabled, UART_TI);
-    Uart_setFlag(&uart->reg->control, !config->isTxEnabled, UART_CRTL_TF);
-    Uart_setFlag(&uart->reg->control, config->isLoopbackModeEnabled, UART_LB);
+    Uart_setFlag(&uart->reg->control, config->isRxEnabled, UART_CONTROL_RE);
+    Uart_setFlag(&uart->reg->control, config->isRxEnabled, UART_CONTROL_RI);
+    Uart_setFlag(&uart->reg->control, !config->isRxEnabled, UART_CONTROL_RF);
+    Uart_setFlag(&uart->reg->control, config->isTxEnabled, UART_CONTROL_TE);
+    Uart_setFlag(&uart->reg->control, config->isTxEnabled, UART_CONTROL_TI);
+    Uart_setFlag(&uart->reg->control, !config->isTxEnabled, UART_CONTROL_TF);
+    Uart_setFlag(&uart->reg->control, config->isLoopbackModeEnabled, UART_CONTROL_LB);
 
     if (config->parity != Uart_Parity_None && config->parity != Uart_Parity_Invalid) {
-        Uart_setFlag(&uart->reg->control, FLAG_SET, UART_CTRL_PE);
-        Uart_setFlag(&uart->reg->control, config->parity == Uart_Parity_Odd, UART_PS);
+        Uart_setFlag(&uart->reg->control, UART_FLAG_SET, UART_CONTROL_PE);
+        Uart_setFlag(&uart->reg->control, config->parity == Uart_Parity_Odd, UART_CONTROL_PS);
     }
 }
 
 void
 Uart_getConfig(const Uart* const uart, Uart_Config* const config)
 {
-    config->isRxEnabled = Uart_getFlag(uart->reg->control, UART_RE);
-    config->isTxEnabled = Uart_getFlag(uart->reg->control, UART_CTRL_TE);
-    config->isLoopbackModeEnabled = Uart_getFlag(uart->reg->control, UART_LB);
+    config->isRxEnabled = Uart_getFlag(uart->reg->control, UART_CONTROL_RE);
+    config->isTxEnabled = Uart_getFlag(uart->reg->control, UART_CONTROL_TE);
+    config->isLoopbackModeEnabled = Uart_getFlag(uart->reg->control, UART_CONTROL_LB);
 
-    if (Uart_getFlag (uart->reg->control, UART_CTRL_PE)) {
-        config->parity = Uart_getFlag(uart->reg->control, UART_PS) ? Uart_Parity_Odd : Uart_Parity_Even;
+    if (Uart_getFlag (uart->reg->control, UART_CONTROL_PE)) {
+        config->parity = Uart_getFlag(uart->reg->control, UART_CONTROL_PS) ? Uart_Parity_Odd : Uart_Parity_Even;
     } else {
         config->parity = Uart_Parity_None;
     }
@@ -185,10 +181,10 @@ void
 Uart_init(Uart_Id id, Uart* const uart)
 {
     uart->id = id;
-#ifndef UNIT_TESTS
-    uart->reg = getAddressBase(id);
-#else
+#ifdef MOCK_REGISTERS
     uart->reg = malloc(sizeof(UartRegisters_t));
+#else
+    uart->reg = getAddressBase(id);
 #endif
     uart->interruptData.rtemsInterruptEntry = (rtems_interrupt_entry){0};
     uart->interruptData.sentBytes = 0;
@@ -212,7 +208,7 @@ Uart_write(Uart* const uart,
     uint32_t timeout = timeoutLimit;
     if (uart->txFifo == NULL) {
         while ((timeoutLimit == 0) || timeout-- > 0) {
-            if (Uart_getFlag(uart->reg->status, UART_TS)) {
+            if (Uart_getFlag(uart->reg->status, UART_STATUS_TS)) {
                 uart->reg->data = data;
                 rtems_interrupt_vector_enable(interruptNumber(uart->id));
                 return true;
@@ -244,7 +240,7 @@ Uart_read(Uart* const uart,
                 *errCode = Uart_ErrorCode_RxFifoFull;
                 return false;
             }
-            if (Uart_getFlag(uart->reg->status, UART_DR)) {
+            if (Uart_getFlag(uart->reg->status, UART_STATUS_DR)) {
                 *data = uart->reg->data;
                 return true;
             }
@@ -268,7 +264,7 @@ Uart_writeAsync(Uart* const uart,
     uart->txFifo = fifo;
     uart->txHandler = handler;
     uint8_t byte = '\0';
-    if (Uart_getFlag(uart->reg->status, UART_TS)) {
+    if (Uart_getFlag(uart->reg->status, UART_STATUS_TS)) {
         ByteFifo_pull(uart->txFifo, &byte);
         uart->reg->data = byte;
     }
@@ -340,7 +336,7 @@ Uart_handleRx(Uart* const uart)
 {
     bool result = false;
 
-    if (Uart_getFlag(uart->reg->control, UART_RE) && Uart_getFlag(uart->reg->status, UART_DR)) {
+    if (Uart_getFlag(uart->reg->control, UART_CONTROL_RE) && Uart_getFlag(uart->reg->status, UART_STATUS_DR)) {
         if (uart->rxFifo != NULL) {
             uint8_t buf = uart->reg->data;
             if (ByteFifo_isFull(uart->rxFifo)) {
@@ -369,7 +365,7 @@ Uart_handleTx(Uart* const uart)
 {
     bool result = false;
 
-    if (Uart_getFlag(uart->reg->control, UART_CTRL_TE) && Uart_getFlag(uart->reg->status, UART_TS)) {
+    if (Uart_getFlag(uart->reg->control, UART_CONTROL_TE) && Uart_getFlag(uart->reg->status, UART_STATUS_TS)) {
         if (uart->txFifo != NULL) {
             uint8_t buf = '\0';
             if (!ByteFifo_isEmpty(uart->txFifo)) {
@@ -407,10 +403,10 @@ Uart_getLinkErrors(uint32_t statusRegister, Uart_ErrorFlags* errFlags)
 {
     bool result = false;
 
-    errFlags->hasOverrunOccurred = Uart_getFlag(statusRegister, UART_OV);
-    errFlags->hasParityErrorOccurred = Uart_getFlag(statusRegister, UART_PE);
-    errFlags->hasFramingErrorOccurred = Uart_getFlag(statusRegister, UART_FE);
-    errFlags->hasRxFifoFullErrorOccurred = Uart_getFlag(statusRegister, UART_RF);
+    errFlags->hasOverrunOccurred = Uart_getFlag(statusRegister, UART_STATUS_OV);
+    errFlags->hasParityErrorOccurred = Uart_getFlag(statusRegister, UART_STATUS_PE);
+    errFlags->hasFramingErrorOccurred = Uart_getFlag(statusRegister, UART_STATUS_FE);
+    errFlags->hasRxFifoFullErrorOccurred = Uart_getFlag(statusRegister, UART_STATUS_RF);
 
     if (errFlags->hasOverrunOccurred ||
         errFlags->hasParityErrorOccurred ||
@@ -425,15 +421,15 @@ Uart_getLinkErrors(uint32_t statusRegister, Uart_ErrorFlags* errFlags)
 bool
 Uart_getFlag(const uint32_t uartRegister, const uint32_t flag)
 {
-    return (bool) ((uartRegister >> flag) & FLAG_MASK);
+    return (bool) ((uartRegister >> flag) & UART_FLAG_MASK);
 }
 
 void
 Uart_setFlag(volatile uint32_t *const uartRegister, const bool set, const uint32_t flag)
 {
     if (set) {
-        *uartRegister |= (FLAG_MASK << flag);
+        *uartRegister |= (UART_FLAG_MASK << flag);
     } else {
-        *uartRegister &= ~(FLAG_MASK << flag);
+        *uartRegister &= ~(UART_FLAG_MASK << flag);
     }
 }

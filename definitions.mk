@@ -40,4 +40,4 @@ OPTFLAGS = -Os -ffunction-sections -fdata-sections
 ABI_FLAGS = $(shell pkg-config --cflags $(PKG_CONFIG))
 LDFLAGS = $(shell pkg-config --libs $(PKG_CONFIG))
 
-DEFFLAGS = -DUNIT_TESTS
+DEFFLAGS = -DMOCK_REGISTERS
