@@ -127,6 +127,14 @@ typedef volatile struct
     uint32_t latch;   ///< latch register
 } * Timer_Apbctrl2_Registers;
 
+typedef void (*Timer_InterruptCallback)(void* arg);
+
+typedef struct
+{
+    Timer_InterruptCallback callback;
+    void* arg; 
+} Timer_InterruptHandler;
+
 /// \brief Timer device identifiers.
 typedef enum
 {
@@ -153,6 +161,7 @@ typedef struct
 {
     Timer_Id id;                   ///< Timer device id
     Timer_Apbctrl1_Registers regs; ///< Hardware timer registers
+    Timer_InterruptHandler irqHandler;
 } Timer_Apbctrl1;
 
 /// \brief Timer device descriptor.
@@ -160,6 +169,7 @@ typedef struct
 {
     Timer_Id id;                   ///< Timer device id
     Timer_Apbctrl2_Registers regs; ///< Hardware timer registers
+    Timer_InterruptHandler irqHandler;
 } Timer_Apbctrl2;
 
 #endif // BSP_TIMERREGS_H

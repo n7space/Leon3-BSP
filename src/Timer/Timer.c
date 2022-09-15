@@ -29,6 +29,16 @@ Timer_Apbctrl1_Base_Registers baseApbctrl1Registers =
 Timer_Apbctrl2_Base_Registers baseApbctrl2Registers =
         (Timer_Apbctrl2_Base_Registers) GPTIMER_APBCTRL2_ADDRESS_BASE;
 
+static inline void
+emptyCallback(void* arg)
+{
+    (void)arg;
+}
+
+static Timer_InterruptHandler defaultInterruptHandler = {
+    .callback = emptyCallback,
+    .arg = 0 };
+
 void
 Timer_baseInit(volatile uint32_t *const baseConfigurationRegister)
 {
@@ -118,6 +128,7 @@ Timer_Apbctrl1_init(Timer_Id id, Timer_Apbctrl1 *const timer)
     Timer_baseInit (&baseApbctrl1Registers->configuration);
     timer->id = id;
     timer->regs = getApbctrl1TimerAddressById (id);
+    timer->irqHandler = defaultInterruptHandler;
 }
 
 void
@@ -207,6 +218,7 @@ Timer_Apbctrl2_init(Timer_Id id, Timer_Apbctrl2 *const timer)
     Timer_baseInit (&baseApbctrl2Registers->configuration);
     timer->id = id;
     timer->regs = getApbctrl2TimerAddressById (id);
+    timer->irqHandler = defaultInterruptHandler;
 }
 
 void
