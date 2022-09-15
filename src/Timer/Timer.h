@@ -68,9 +68,11 @@ void Timer_Apbctrl1_setBaseScalerReloadValue(uint16_t scalerReloadValue);
 void Timer_Apbctrl1_setConfig(Timer_Apbctrl1 *const timer, const Timer_Config *const config);
 void Timer_Apbctrl1_getConfig(const Timer_Apbctrl1 *const timer, Timer_Config *const config);
 void Timer_Apbctrl1_start(Timer_Apbctrl1 *const timer);
+void Timer_Apbctrl1_startAsync(Timer_Apbctrl1 *const timer);
 /// \brief Clears the current Timer counter value.
 /// \param [in] timer Pointer to a structure representing Timer.
 void Timer_Apbctrl1_restart(Timer_Apbctrl1 *const timer);
+void Timer_Apbctrl1_restartAsync(Timer_Apbctrl1 *const timer);
 void Timer_Apbctrl1_stop(Timer_Apbctrl1 *const timer);
 /// \brief Returns the current Timer counter value.
 /// \param [in] timer Pointer to a structure representing Timer.
@@ -85,7 +87,9 @@ void Timer_Apbctrl2_setBaseScalerReloadValue(uint8_t scalerReloadValue);
 void Timer_Apbctrl2_setConfig(Timer_Apbctrl2 *const timer, const Timer_Config *const config);
 void Timer_Apbctrl2_getConfig(const Timer_Apbctrl2 *const timer, Timer_Config *const config);
 void Timer_Apbctrl2_start(Timer_Apbctrl2 *const timer);
+void Timer_Apbctrl2_startAsync(Timer_Apbctrl2 *const timer);
 void Timer_Apbctrl2_restart(Timer_Apbctrl2 *const timer);
+void Timer_Apbctrl2_restartAsync(Timer_Apbctrl2 *const timer);
 void Timer_Apbctrl2_stop(Timer_Apbctrl2 *const timer);
 uint32_t Timer_Apbctrl2_getCounterValue(const Timer_Apbctrl2 *const timer);
 bool Timer_Apbctrl2_hasFinished(const Timer_Apbctrl2 *const timer);

@@ -1,11 +1,13 @@
+
 include ../../definitions.mk
 
 TIMER_LIB_BUILD_DIR = ../../$(BUILD_DIR)/$(SRC_DIR)/$(TIMER_SRC_DIR)
 
+CFLAGS = -g $(DEPFLAGS) $(WARNFLAGS) $(ABI_FLAGS) $(OPTFLAGS) -DRTEMS_API_$(RTEMS_API) -DRTEMS_SIS
+
 SRC = $(wildcard ./*.c)
-LIB_SRC = $(filter-out sis.c,$(SRC))
-INCL = $(addprefix -I,$(sort $(dir $(wildcard ./*.h))))
-OBJECTS := $(patsubst %.c,$(TIMER_LIB_BUILD_DIR)/%.o, $(LIB_SRC))
+INCL = $(addprefix -I,$(sort $(dir $(wildcard ./*.h) $(wildcard ./../Utils/*.h) $(wildcard ./../SystemConfig/*.h))))
+OBJECTS = $(patsubst %.c,$(TIMER_LIB_BUILD_DIR)/%.o, $(SRC))
 
 all: libtimer
 

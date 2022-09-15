@@ -146,10 +146,23 @@ Timer_Apbctrl1_start(Timer_Apbctrl1* const timer)
 }
 
 void
+Timer_Apbctrl1_startAsync(Timer_Apbctrl1 *const timer)
+{
+
+}
+
+void
 Timer_Apbctrl1_restart(Timer_Apbctrl1 *const timer)
 {
     Timer_restart (&timer->regs->control);
 }
+
+void
+Timer_Apbctrl1_restartAsync(Timer_Apbctrl1 *const timer)
+{
+    
+}
+
 
 void
 Timer_Apbctrl1_stop(Timer_Apbctrl1 *const timer)
@@ -222,9 +235,21 @@ Timer_Apbctrl2_start(Timer_Apbctrl2 *const timer)
 }
 
 void
+Timer_Apbctrl2_startAsync(Timer_Apbctrl2 *const timer)
+{
+    
+}
+
+void
 Timer_Apbctrl2_restart(Timer_Apbctrl2 *const timer)
 {
     Timer_restart (&timer->regs->control);
+}
+
+void
+Timer_Apbctrl2_restartAsync(Timer_Apbctrl2 *const timer)
+{
+    
 }
 
 void
