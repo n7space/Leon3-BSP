@@ -425,9 +425,9 @@ Uart_getFlag(const uint32_t uartRegister, const uint32_t flag)
 }
 
 void
-Uart_setFlag(volatile uint32_t *const uartRegister, const bool set, const uint32_t flag)
+Uart_setFlag(volatile uint32_t *const uartRegister, const bool isSet, const uint32_t flag)
 {
-    if (set) {
+    if (isSet) {
         *uartRegister |= (UART_FLAG_MASK << flag);
     } else {
         *uartRegister &= ~(UART_FLAG_MASK << flag);

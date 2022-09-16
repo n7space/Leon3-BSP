@@ -316,9 +316,9 @@ bool Uart_getFlag(const uint32_t uartRegister, const uint32_t flag);
 
 /// \brief Sets flag status in provided uart register.
 /// \param [in] uartRegister uart register with status or control flags
-/// \param [in] set flag value to be set
+/// \param [in] isSet flag value to be set
 /// \param [in] flag register flag offset
-void Uart_setFlag(volatile uint32_t *const uartRegister, const bool set, const uint32_t flag);
+void Uart_setFlag(volatile uint32_t *const uartRegister, const bool isSet, const uint32_t flag);
 
 #endif // BSP_UART_H
 
