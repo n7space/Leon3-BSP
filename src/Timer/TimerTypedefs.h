@@ -33,6 +33,7 @@
 #define BSP_TIMERREGS_H
 
 #include <stdint.h>
+#include <rtems.h>
 
 #define GPTIMER_APBCTRL1_ADDRESS_BASE 0x80000300u
 #define GPTIMER_APBCTRL2_ADDRESS_BASE 0x80100600u
@@ -64,12 +65,18 @@ typedef enum
 /// \brief Enum representing Timer interrupt vector numbers.
 typedef enum
 {
-    Timer1_Interrupt = 8,      ///< Timer 1 IRQ
-    Timer2_Interrupt = 9,      ///< Timer 2 IRQ
-    Timer3_Interrupt = 10,     ///< Timer 3 IRQ
-    Timer4_Interrupt = 11,     ///< Timer 4 IRQ
-    TimerMax_Interrupt = 0xFFu ///< Max value
+    Timer_Apbctrl1_Interrupt_1 = 8,          ///< Timer 1 IRQ
+    Timer_Apbctrl1_Interrupt_2 = 9,          ///< Timer 2 IRQ
+    Timer_Apbctrl1_Interrupt_3 = 10,         ///< Timer 3 IRQ
+    Timer_Apbctrl1_Interrupt_4 = 11,         ///< Timer 4 IRQ
+    Timer_Apbctrl1_Interrupt_Invalid = 0xFFu ///< Invalid value
 } Timer_Apbctrl1_Interrupt;
+
+typedef enum
+{
+    Timer_Apbctrl2_Interrupt_1 = 7,            ///< Timer IRQ
+    Timer_Apbctrl2_Interrupt_Invalid = 0xFFu ///< Invalid value
+} Timer_Apbctrl2_Interrupt;
 
 /// \brief Enum representing Timer control register flags.
 typedef enum
@@ -131,6 +138,7 @@ typedef void (*Timer_InterruptCallback)(void* arg);
 
 typedef struct
 {
+    rtems_interrupt_entry rtemsInterruptEntry; ///< RTEMS interrupt entry
     Timer_InterruptCallback callback;
     void* arg; 
 } Timer_InterruptHandler;

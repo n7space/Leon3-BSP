@@ -57,28 +57,29 @@ void Timer_stop(volatile uint32_t *const timerControlRegister);
 /// \param [in] timer Pointer to a structure representing Timer.
 /// \returns Whether the counter has counted to 0.
 bool Timer_hasFinished(const uint32_t timerControlRegister, const uint32_t timerCounterRegister);
+void irqInit(Timer_InterruptHandler *handler, const uint8_t irqNumber);
 
 /// \brief Intiializes a device descriptor for Timer.
 /// \param [in] id Timer device identifier.
 /// \param [out] timer Timer device descriptor.
-void Timer_Apbctrl1_init(Timer_Id id, Timer_Apbctrl1 *const timer);
+// TODO
+void Timer_Apbctrl1_init(Timer_Id id, Timer_Apbctrl1 *const timer, const Timer_InterruptHandler handler);
 /// \brief Sets Apbctrl1 base scaler value for all timers relative to systick
 /// \param [in] scaler Reload register value (minimum 5)
 void Timer_Apbctrl1_setBaseScalerReloadValue(uint16_t scalerReloadValue);
 void Timer_Apbctrl1_setConfig(Timer_Apbctrl1 *const timer, const Timer_Config *const config);
 void Timer_Apbctrl1_getConfig(const Timer_Apbctrl1 *const timer, Timer_Config *const config);
 void Timer_Apbctrl1_start(Timer_Apbctrl1 *const timer);
-void Timer_Apbctrl1_startAsync(Timer_Apbctrl1 *const timer);
 /// \brief Clears the current Timer counter value.
 /// \param [in] timer Pointer to a structure representing Timer.
 void Timer_Apbctrl1_restart(Timer_Apbctrl1 *const timer);
-void Timer_Apbctrl1_restartAsync(Timer_Apbctrl1 *const timer);
 void Timer_Apbctrl1_stop(Timer_Apbctrl1 *const timer);
 /// \brief Returns the current Timer counter value.
 /// \param [in] timer Pointer to a structure representing Timer.
 /// \returns Current counter value.
 uint32_t Timer_Apbctrl1_getCounterValue(const Timer_Apbctrl1 *const timer);
 bool Timer_Apbctrl1_hasFinished(const Timer_Apbctrl1 *const timer);
+Timer_Apbctrl1_Interrupt Timer_getApbctrl1InterruptNumber(Timer_Id id);
 
 void Timer_Apbctrl2_init(Timer_Id id, Timer_Apbctrl2 *const timer);
 /// \brief Sets Apbctrl2 base scaler value for all timers relative to systick
@@ -87,12 +88,11 @@ void Timer_Apbctrl2_setBaseScalerReloadValue(uint8_t scalerReloadValue);
 void Timer_Apbctrl2_setConfig(Timer_Apbctrl2 *const timer, const Timer_Config *const config);
 void Timer_Apbctrl2_getConfig(const Timer_Apbctrl2 *const timer, Timer_Config *const config);
 void Timer_Apbctrl2_start(Timer_Apbctrl2 *const timer);
-void Timer_Apbctrl2_startAsync(Timer_Apbctrl2 *const timer);
 void Timer_Apbctrl2_restart(Timer_Apbctrl2 *const timer);
-void Timer_Apbctrl2_restartAsync(Timer_Apbctrl2 *const timer);
 void Timer_Apbctrl2_stop(Timer_Apbctrl2 *const timer);
 uint32_t Timer_Apbctrl2_getCounterValue(const Timer_Apbctrl2 *const timer);
 bool Timer_Apbctrl2_hasFinished(const Timer_Apbctrl2 *const timer);
+Timer_Apbctrl2_Interrupt Timer_getApbctrl2InterruptNumber(Timer_Id id);
 
 bool Timer_getFlag(const uint32_t timerRegister, const uint32_t flag);
 void Timer_setFlag(volatile uint32_t *const timerRegister, const bool set, const uint32_t flag);

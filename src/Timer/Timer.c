@@ -97,6 +97,22 @@ Timer_hasFinished(const uint32_t timerControlRegister, const uint32_t timerCount
     return result;
 }
 
+void
+irqInit(Timer_InterruptHandler *handler, const uint8_t irqNumber)
+{
+    rtems_interrupt_clear(irqNumber);
+    rtems_interrupt_entry_initialize(
+            &(handler->rtemsInterruptEntry),
+            (rtems_interrupt_handler)handler->callback,
+            handler->arg,
+            "Timer Interrupt");
+    rtems_interrupt_entry_install(
+        irqNumber,
+        RTEMS_INTERRUPT_UNIQUE,
+        &(handler->rtemsInterruptEntry));
+    rtems_interrupt_vector_enable(irqNumber);
+}
+
 static inline Timer_Apbctrl1_Registers
 getApbctrl1TimerAddressById(Timer_Id id)
 {
@@ -123,12 +139,15 @@ getApbctrl1TimerAddressById(Timer_Id id)
 }
 
 void
-Timer_Apbctrl1_init(Timer_Id id, Timer_Apbctrl1 *const timer)
+Timer_Apbctrl1_init(Timer_Id id, Timer_Apbctrl1 *const timer, const Timer_InterruptHandler handler)
 {
     Timer_baseInit (&baseApbctrl1Registers->configuration);
     timer->id = id;
     timer->regs = getApbctrl1TimerAddressById (id);
-    timer->irqHandler = defaultInterruptHandler;
+    timer->irqHandler = handler;
+
+    uint8_t irqNumber = Timer_getApbctrl1InterruptNumber(timer->id);
+    irqInit(&timer->irqHandler, irqNumber);
 }
 
 void
@@ -140,8 +159,10 @@ Timer_Apbctrl1_setBaseScalerReloadValue(uint16_t scalerReloadValue)
 void
 Timer_Apbctrl1_setConfig(Timer_Apbctrl1 *const timer, const Timer_Config *const config)
 {
+    rtems_interrupt_vector_disable(Timer_getApbctrl1InterruptNumber(timer->id));
     timer->regs = getApbctrl1TimerAddressById (timer->id);
     Timer_setConfig (&timer->regs->control, &timer->regs->reload, config);
+    rtems_interrupt_vector_enable(Timer_getApbctrl1InterruptNumber(timer->id));
 }
 
 void
@@ -153,44 +174,69 @@ Timer_Apbctrl1_getConfig(const Timer_Apbctrl1 *const timer, Timer_Config *const 
 void
 Timer_Apbctrl1_start(Timer_Apbctrl1* const timer)
 {
+    rtems_interrupt_vector_disable(Timer_getApbctrl1InterruptNumber(timer->id));
     Timer_start (&timer->regs->control);
-}
-
-void
-Timer_Apbctrl1_startAsync(Timer_Apbctrl1 *const timer)
-{
-
+    rtems_interrupt_vector_enable(Timer_getApbctrl1InterruptNumber(timer->id));
 }
 
 void
 Timer_Apbctrl1_restart(Timer_Apbctrl1 *const timer)
 {
+    rtems_interrupt_vector_disable(Timer_getApbctrl1InterruptNumber(timer->id));
     Timer_restart (&timer->regs->control);
+    rtems_interrupt_vector_enable(Timer_getApbctrl1InterruptNumber(timer->id));
 }
-
-void
-Timer_Apbctrl1_restartAsync(Timer_Apbctrl1 *const timer)
-{
-    
-}
-
 
 void
 Timer_Apbctrl1_stop(Timer_Apbctrl1 *const timer)
 {
+    rtems_interrupt_vector_disable(Timer_getApbctrl1InterruptNumber(timer->id));
     Timer_stop (&timer->regs->control);
 }
 
 uint32_t
 Timer_Apbctrl1_getCounterValue(const Timer_Apbctrl1 *const timer)
 {
-    return timer->regs->counter;
+    uint32_t result = 0;
+
+    rtems_interrupt_vector_disable(Timer_getApbctrl1InterruptNumber(timer->id));
+    result = timer->regs->counter;
+    rtems_interrupt_vector_enable(Timer_getApbctrl1InterruptNumber(timer->id));
+
+    return result;
 }
 
 bool
 Timer_Apbctrl1_hasFinished(const Timer_Apbctrl1 *const timer)
 {
-    return Timer_hasFinished (timer->regs->control, timer->regs->counter);
+    bool result = false;
+
+    rtems_interrupt_vector_disable(Timer_getApbctrl1InterruptNumber(timer->id));
+    result = Timer_hasFinished (timer->regs->control, timer->regs->counter);
+    rtems_interrupt_vector_enable(Timer_getApbctrl1InterruptNumber(timer->id));
+
+    return result;
+}
+
+Timer_Apbctrl1_Interrupt getApbctrl1TimerInterruptNumber(Timer_Id id)
+{
+    switch (id) {
+        case Timer_Id_1: {
+            return Timer_Apbctrl1_Interrupt_1;
+        }
+        case Timer_Id_2: {
+            return Timer_Apbctrl1_Interrupt_2;
+        }
+        case Timer_Id_3: {
+            return Timer_Apbctrl1_Interrupt_3;
+        }
+        case Timer_Id_4: {
+            return Timer_Apbctrl1_Interrupt_4;
+        }
+        default: {
+            return Timer_Apbctrl1_Interrupt_Invalid;
+        }
+    }
 }
 
 static inline Timer_Apbctrl2_Registers
@@ -219,6 +265,7 @@ Timer_Apbctrl2_init(Timer_Id id, Timer_Apbctrl2 *const timer)
     timer->id = id;
     timer->regs = getApbctrl2TimerAddressById (id);
     timer->irqHandler = defaultInterruptHandler;
+    rtems_interrupt_clear(Timer_getApbctrl2InterruptNumber(timer->id));
 }
 
 void
@@ -247,21 +294,9 @@ Timer_Apbctrl2_start(Timer_Apbctrl2 *const timer)
 }
 
 void
-Timer_Apbctrl2_startAsync(Timer_Apbctrl2 *const timer)
-{
-    
-}
-
-void
 Timer_Apbctrl2_restart(Timer_Apbctrl2 *const timer)
 {
     Timer_restart (&timer->regs->control);
-}
-
-void
-Timer_Apbctrl2_restartAsync(Timer_Apbctrl2 *const timer)
-{
-    
 }
 
 void
@@ -280,6 +315,21 @@ bool
 Timer_Apbctrl2_hasFinished(const Timer_Apbctrl2 *const timer)
 {
     return Timer_hasFinished (timer->regs->control, timer->regs->counter);
+}
+
+Timer_Apbctrl2_Interrupt getApbctrl2TimerInterruptNumber(Timer_Id id)
+{
+    switch (id) {
+        case Timer_Id_1: {
+            return Timer_Apbctrl2_Interrupt_1;
+        }
+        case Timer_Id_2: {
+            return Timer_Apbctrl2_Interrupt_1;
+        }
+        default: {
+            return Timer_Apbctrl2_Interrupt_Invalid;
+        }
+    }
 }
 
 bool
