@@ -38,8 +38,8 @@
 #define GPTIMER_APBCTRL1_ADDRESS_BASE 0x80000300u
 #define GPTIMER_APBCTRL2_ADDRESS_BASE 0x80100600u
 
-#define FLAG_MASK 0x01
-#define FLAG_SET 0x01
+#define FLAG_MASK 0x1
+#define FLAG_SET 0x1
 #define FLAG_RESET 0x00
 
 #define TIMER_UNDERFLOWED (uint32_t) (-1)
@@ -81,23 +81,23 @@ typedef enum
 /// \brief Enum representing Timer control register flags.
 typedef enum
 {
-    EN = 0,     ///< Enable the timer
-    RS,         ///< Restart
-    LD,         ///< Load value from reload register to counter
-    IE,         ///< Interrupt Enable
-    IP,         ///< Interrupt Pending
-    CH,         ///< Chain with preceding time
-    DH          ///< Debug Halt
+    TIMER_CONTROL_EN = 0,  ///< Enable the timer
+    TIMER_CONTROL_RS,      ///< Restart
+    TIMER_CONTROL_LD,      ///< Load value from reload register to counter
+    TIMER_CONTROL_IE,      ///< Interrupt Enable
+    TIMER_CONTROL_IP,      ///< Interrupt Pending
+    TIMER_CONTROL_CH,      ///< Chain with preceding time
+    TIMER_CONTROL_DH       ///< Debug Halt
 } Timer_Control_Register_Flags;
 
 /// \brief Enum representing config register TIMER flags.
 typedef enum
 {
-    TIMERS = 0, ///< Number of implemented timers
-    IRQ = 3,    ///< Interrupt ID of first timer
-    SI = 8,     ///< Separate interrupts
-    DF = 9,     ///< Disable timer freeze
-    EL = 11     ///< Enable latching
+    TIMER_CONFIG_TIMERS = 0, ///< Number of implemented timers
+    TIMER_CONFIG_IRQ = 3,    ///< Interrupt ID of first timer
+    TIMER_CONFIG_SI = 8,     ///< Separate interrupts
+    TIMER_CONFIG_DF = 9,     ///< Disable timer freeze
+    TIMER_CONFIG_EL = 11     ///< Enable latching
 } Timer_Config_Register_Flags;
 
 /// \brief Structure representing global scaler and configuration registers for Apbctrl1 timers

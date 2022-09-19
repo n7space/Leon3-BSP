@@ -1,6 +1,8 @@
-include ../../definitions.mk
+ROOT_PATH = ../..
 
-UART_LIB_BUILD_DIR = ../../$(BUILD_DIR)/$(SRC_DIR)/$(UART_SRC_DIR)
+include $(ROOT_PATH)/definitions.mk
+
+UART_LIB_BUILD_DIR = $(ROOT_PATH)/$(BUILD_DIR)/$(SRC_DIR)/$(UART_SRC_DIR)
 
 CFLAGS = -g $(DEPFLAGS) $(WARNFLAGS) $(ABI_FLAGS) $(OPTFLAGS) -DRTEMS_API_$(RTEMS_API) -DRTEMS_SIS
 

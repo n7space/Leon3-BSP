@@ -37,6 +37,16 @@
 #include <stdint.h>
 #include "TimerTypedefs.h"
 
+static inline void
+emptyCallback(void* arg)
+{
+    (void)arg;
+}
+
+static Timer_InterruptHandler defaultInterruptHandler = {
+    .callback = emptyCallback,
+    .arg = 0 };
+
 void Timer_baseInit(volatile uint32_t *const baseConfigurationRegister);
 /// \brief Configures an Timer device based on a configuration descriptor.
 /// \param [in] timer Timer device descriptor.
@@ -95,7 +105,7 @@ bool Timer_Apbctrl2_hasFinished(const Timer_Apbctrl2 *const timer);
 Timer_Apbctrl2_Interrupt Timer_getApbctrl2InterruptNumber(Timer_Id id);
 
 bool Timer_getFlag(const uint32_t timerRegister, const uint32_t flag);
-void Timer_setFlag(volatile uint32_t *const timerRegister, const bool set, const uint32_t flag);
+void Timer_setFlag(volatile uint32_t *const timerRegister, const bool iSet, const uint32_t flag);
 
 #endif // BSP_TIMER_H
 

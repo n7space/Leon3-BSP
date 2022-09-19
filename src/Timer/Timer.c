@@ -29,68 +29,58 @@ Timer_Apbctrl1_Base_Registers baseApbctrl1Registers =
 Timer_Apbctrl2_Base_Registers baseApbctrl2Registers =
         (Timer_Apbctrl2_Base_Registers) GPTIMER_APBCTRL2_ADDRESS_BASE;
 
-static inline void
-emptyCallback(void* arg)
-{
-    (void)arg;
-}
-
-static Timer_InterruptHandler defaultInterruptHandler = {
-    .callback = emptyCallback,
-    .arg = 0 };
-
 void
 Timer_baseInit(volatile uint32_t *const baseConfigurationRegister)
 {
-    Timer_setFlag (baseConfigurationRegister, FLAG_SET, DF);
-    Timer_setFlag (baseConfigurationRegister, FLAG_SET, SI);
+    Timer_setFlag (baseConfigurationRegister, FLAG_SET, TIMER_CONFIG_DF);
+    Timer_setFlag (baseConfigurationRegister, FLAG_SET, TIMER_CONFIG_SI);
 }
 
 void
 Timer_setConfig(volatile uint32_t *const timerControlRegister, volatile uint32_t *const timerReloadRegister, const Timer_Config *const config)
 {
-    Timer_setFlag (timerControlRegister, config->isEnabled, EN);
-    Timer_setFlag (timerControlRegister, config->isInterruptEnabled, IE);
-    Timer_setFlag (timerControlRegister, config->isAutoReloaded, RS);
-    Timer_setFlag (timerControlRegister, config->isChained, CH);
+    Timer_setFlag (timerControlRegister, config->isEnabled, TIMER_CONTROL_EN);
+    Timer_setFlag (timerControlRegister, config->isInterruptEnabled, TIMER_CONTROL_IE);
+    Timer_setFlag (timerControlRegister, config->isAutoReloaded, TIMER_CONTROL_RS);
+    Timer_setFlag (timerControlRegister, config->isChained, TIMER_CONTROL_CH);
     *timerReloadRegister = config->reloadValue;
 }
 
 void
 Timer_getConfig(const uint32_t timerControlRegister, const uint32_t timerReloadRegister, Timer_Config *const config)
 {
-    config->isEnabled = Timer_getFlag (timerControlRegister, EN);
-    config->isInterruptEnabled = Timer_getFlag (timerControlRegister, IE);
-    config->isAutoReloaded = Timer_getFlag (timerControlRegister, RS);
-    config->isChained = Timer_getFlag (timerControlRegister, CH);
+    config->isEnabled = Timer_getFlag (timerControlRegister, TIMER_CONTROL_EN);
+    config->isInterruptEnabled = Timer_getFlag (timerControlRegister, TIMER_CONTROL_IE);
+    config->isAutoReloaded = Timer_getFlag (timerControlRegister, TIMER_CONTROL_RS);
+    config->isChained = Timer_getFlag (timerControlRegister, TIMER_CONTROL_CH);
     config->reloadValue = timerReloadRegister;
 }
 
 void
 Timer_start(volatile uint32_t *const timerControlRegister)
 {
-    Timer_setFlag (timerControlRegister, FLAG_SET, IE);
-    Timer_setFlag (timerControlRegister, FLAG_SET, EN);
+    Timer_setFlag (timerControlRegister, FLAG_SET, TIMER_CONTROL_IE);
+    Timer_setFlag (timerControlRegister, FLAG_SET, TIMER_CONTROL_EN);
 }
 
 void
 Timer_restart(volatile uint32_t *const timerControlRegister)
 {
-    Timer_setFlag (timerControlRegister, FLAG_SET, LD);
+    Timer_setFlag (timerControlRegister, FLAG_SET, TIMER_CONTROL_LD);
     Timer_start (timerControlRegister);
 }
 
 void
 Timer_stop(volatile uint32_t *const timerControlRegister)
 {
-    Timer_setFlag (timerControlRegister, FLAG_RESET, IE);
-    Timer_setFlag (timerControlRegister, FLAG_RESET, EN);
+    Timer_setFlag (timerControlRegister, FLAG_RESET, TIMER_CONTROL_IE);
+    Timer_setFlag (timerControlRegister, FLAG_RESET, TIMER_CONTROL_EN);
 }
 
 bool
 Timer_hasFinished(const uint32_t timerControlRegister, const uint32_t timerCounterRegister) {
     bool result = false;
-    if (!Timer_getFlag (timerControlRegister, EN) && timerCounterRegister == TIMER_UNDERFLOWED) {
+    if (!Timer_getFlag (timerControlRegister, TIMER_CONTROL_EN) && timerCounterRegister == TIMER_UNDERFLOWED) {
         result = true;
     }
     
@@ -145,6 +135,9 @@ Timer_Apbctrl1_init(Timer_Id id, Timer_Apbctrl1 *const timer, const Timer_Interr
     timer->id = id;
     timer->regs = getApbctrl1TimerAddressById (id);
     timer->irqHandler = handler;
+    timer->regs->control = 0;
+    timer->regs->counter = 0;
+    timer->regs->reload = 0;
 
     uint8_t irqNumber = Timer_getApbctrl1InterruptNumber(timer->id);
     irqInit(&timer->irqHandler, irqNumber);
@@ -160,7 +153,6 @@ void
 Timer_Apbctrl1_setConfig(Timer_Apbctrl1 *const timer, const Timer_Config *const config)
 {
     rtems_interrupt_vector_disable(Timer_getApbctrl1InterruptNumber(timer->id));
-    timer->regs = getApbctrl1TimerAddressById (timer->id);
     Timer_setConfig (&timer->regs->control, &timer->regs->reload, config);
     rtems_interrupt_vector_enable(Timer_getApbctrl1InterruptNumber(timer->id));
 }
@@ -218,7 +210,7 @@ Timer_Apbctrl1_hasFinished(const Timer_Apbctrl1 *const timer)
     return result;
 }
 
-Timer_Apbctrl1_Interrupt getApbctrl1TimerInterruptNumber(Timer_Id id)
+Timer_Apbctrl1_Interrupt Timer_getApbctrl1InterruptNumber(Timer_Id id)
 {
     switch (id) {
         case Timer_Id_1: {
@@ -317,7 +309,7 @@ Timer_Apbctrl2_hasFinished(const Timer_Apbctrl2 *const timer)
     return Timer_hasFinished (timer->regs->control, timer->regs->counter);
 }
 
-Timer_Apbctrl2_Interrupt getApbctrl2TimerInterruptNumber(Timer_Id id)
+Timer_Apbctrl2_Interrupt Timer_getApbctrl2InterruptNumber(Timer_Id id)
 {
     switch (id) {
         case Timer_Id_1: {
@@ -339,7 +331,7 @@ Timer_getFlag(const uint32_t timerRegister, const uint32_t flag)
 }
 
 void
-Timer_setFlag(volatile uint32_t *const timerRegister, const bool set, const uint32_t flag)
+Timer_setFlag(volatile uint32_t *const timerRegister, const bool isSet, const uint32_t flag)
 {
     if (set) {
         *timerRegister |= (FLAG_MASK << flag);

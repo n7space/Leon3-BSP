@@ -2,6 +2,9 @@ include ../definitions.mk
 
 all: uart
 
+timer:
+	$(MAKE) -C $(TIMER_SRC_DIR) libtimer
+
 uart: 
 	$(MAKE) -C $(UART_SRC_DIR) libuart
 
