@@ -1,28 +1,26 @@
 include definitions.mk
 
-all: sis_module timers
+all: sis_module uart
 
 sis_module: 
 	$(MAKE) -C $(SIS_MODULE_SRC_DIR) sis
 
-timers:
-	$(MAKE) -C $(SRC_DIR) timers
+uart:
+	$(MAKE) -C $(SRC_DIR) uart
 
-tests: timers
-	$(MAKE) -C $(TEST_DIR) tests
-	
-timers_unit_check: tests
-	$(MAKE) -C $(TEST_DIR) timers_unit_check
+uart_unit_test:
+	$(MAKE) -C $(TEST_DIR) uart_unit_test
 
-unit_check: tests
-	$(MAKE) -C $(TEST_DIR) unit_check
+uart_integration_test: sis_module uart 
+	$(MAKE) -C $(TEST_DIR) uart_integration_test
 
-integration_check:
+uart_test: uart_unit_test uart_integration_test
 
-check: unit_check integration_check
+test: uart_test
 
 clean:
 	$(MAKE) -C $(SIS_MODULE_SRC_DIR) clean
+	$(MAKE) -C $(TEST_DIR) clean
 	$(MAKE) -C $(SRC_DIR) clean
 	rm -rf $(BUILD_DIR)
 

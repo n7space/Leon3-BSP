@@ -1,14 +1,12 @@
 include ../definitions.mk
 
-SRC_BUILD_DIR = ../$(BUILD_DIR)/$(SRC_DIR)
+all: uart
 
-all: timers
-
-timers: 
-	$(MAKE) -C $(TIMER_SRC_DIR) libtimer
+uart: 
+	$(MAKE) -C $(UART_SRC_DIR) libuart
 
 clean:
-	$(MAKE) -C $(TIMER_SRC_DIR) clean
+	$(MAKE) -C $(UART_SRC_DIR) clean
 	rm -rf $(SRC_BUILD_DIR)
 
 .PHONY: clean

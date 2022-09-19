@@ -3,22 +3,19 @@
  *
  * @copyright 2022 N7 Space Sp. z o.o.
  *
- * Test Environment was developed under a programme of,
- * and funded by, the European Space Agency (the "ESA").
+ * Leon3 BSP for the Test Environment is free software: you can redistribute 
+ * it and/or modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of the License,
+ * or (at your option) any later version.
  *
+ * Leon3 BSP for the Test Environment is distributed in the hope
+ * that it will be useful, but WITHOUT ANY WARRANTY; without even
+ * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
  *
- * Licensed under the ESA Public License (ESA-PL) Permissive,
- * Version 2.3 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     https://essr.esa.int/license/list
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * You should have received a copy of the GNU General Public License
+ * along with Leon3 BSP for the Test Environment. If not,
+ * see <http://www.gnu.org/licenses/>.
  */
 
 /// \brief Uart hardware driver function prototypes and datatypes.
@@ -34,29 +31,29 @@
 
 #include <UartRegisters.h>
 #include <ByteFifo.h>
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <rtems.h>
 
 /// \brief Uart device identifiers.
 typedef enum
 {
-    Uart_Id_0 = 0,  ///< UART0 device
-    Uart_Id_1 = 1,  ///< UART1 device
-    Uart_Id_2 = 2,  ///< UART2 device
-    Uart_Id_3 = 3,  ///< UART3 device
-    Uart_Id_4 = 4,  ///< UART4 device
-    Uart_Id_5 = 5,  ///< UART5 device
-    Uart_Id_Max = 6 ///< Error value
+    Uart_Id_0 = 0,      ///< UART0 device
+    Uart_Id_1 = 1,      ///< UART1 device
+    Uart_Id_2 = 2,      ///< UART2 device
+    Uart_Id_3 = 3,      ///< UART3 device
+    Uart_Id_4 = 4,      ///< UART4 device
+    Uart_Id_5 = 5,      ///< UART5 device
+    Uart_Id_Invalid = 6 ///< Error value
 } Uart_Id;
 
 /// \brief Uart parity.
 typedef enum
 {
-    Uart_Parity_Even = 0, ///< Assume even parity bit
-    Uart_Parity_Odd = 1,  ///< Assume odd parity bit
-    Uart_Parity_None = 4, ///< Assume no parity
-    Uart_Parity_Max = 9   ///< Error value
+    Uart_Parity_None = 0,   ///< Assume no parity
+    Uart_Parity_Even = 1,   ///< Assume even parity bit
+    Uart_Parity_Odd = 2,    ///< Assume odd parity bit
+    Uart_Parity_Invalid = 9 ///< Error value
 } Uart_Parity;
 
 /// \brief Uart baud rate values.
@@ -75,7 +72,7 @@ typedef enum
     Uart_BaudRate_57600 = 57600,   ///< 57600 bauds
     Uart_BaudRate_576800 = 76800,  ///< 76800 bauds
     Uart_BaudRate_115200 = 115200, ///< 115200 bauds
-    Uart_BaudRate_Max = 0          ///< Error value
+    Uart_BaudRate_Invalid = 0      ///< Error value
 } Uart_BaudRate;
 
 /// \brief Enum representing error codes
@@ -97,13 +94,11 @@ typedef struct
     /// \brief Flag indicating whether the receiver should be enabled
     bool isRxEnabled;
     /// \brief Flag indicating whether to enable local loopback mode
-    bool isTestModeEnabled;
+    bool isLoopbackModeEnabled;
     /// \brief Indicator of used parity bit
     Uart_Parity parity;
     /// \brief Target baud rate
     Uart_BaudRate baudRate;
-    /// \brief Indicator of the baud rate clock source
-    uint32_t baudRateClkSrc;
     /// \brief Baud rate clock source frequency
     uint32_t baudRateClkFreq;
 } Uart_Config;
@@ -116,23 +111,23 @@ typedef struct
 } Uart_InterruptData;
 
 /// \brief A function serving as a callback called at the end of transmission.
-typedef void (*UartTxEndCallback)(void* arg);
+typedef void (*UartTxEndCallback)(volatile void* arg);
 
 /// \brief A descriptor of an end-of-transmission event handler.
 typedef struct
 {
     UartTxEndCallback callback; ///< Callback function
-    void* arg;                  ///< Argument to the callback function
+    volatile void* arg;         ///< Argument to the callback function
 } Uart_TxHandler;
 
 /// \brief A function serving as a callback called upon a reception of a byte
 ///        if the reception queue contains at least a number of bytes specified
 ///        in the handler descriptor.
-typedef void (*UartRxEndLengthCallback)(void* arg);
+typedef void (*UartRxEndLengthCallback)(volatile void* arg);
 
 /// \brief A function serving as a callback called upon a reception of a byte if
 ///        byte matches a target specified in the handler descriptor.
-typedef void (*UartRxEndCharacterCallback)(void* arg);
+typedef void (*UartRxEndCharacterCallback)(volatile void* arg);
 
 /// \brief A descriptor of a byte reception event handler.
 typedef struct
@@ -143,9 +138,9 @@ typedef struct
     /// \brief Callback called when a targetCharacter is received
     UartRxEndCharacterCallback characterCallback;
     /// \brief Argument for the length callback
-    void* lengthArg;
+    volatile void* lengthArg;
     /// \brief Argument for the character callback
-    void* characterArg;
+    volatile void* characterArg;
     /// \brief Target character, upon reception of which character callback
     /// is called
     uint8_t targetCharacter;
@@ -156,7 +151,7 @@ typedef struct
 
 /// \brief A function serving as a callback called upon detection of an error by
 ///        hardware.
-typedef void (*UartErrorCallback)(void* arg);
+typedef void (*UartErrorCallback)(volatile void* arg);
 
 /// \brief A descriptor of an error handler.
 typedef struct
@@ -312,10 +307,18 @@ void Uart_handleInterrupt(Uart* const uart);
 /// \retval false  no hardware errors
 bool Uart_getLinkErrors(uint32_t statusRegister, Uart_ErrorFlags* errFlags);
 
-/// \brief Reads Uart device status register.
-/// \param [in] uart Uart device descriptor.
-/// \returns The status register value.
-uint32_t Uart_getStatusRegister(const Uart* const uart);
+/// \brief Checks flag status in provided uart register.
+/// \param [in] uartRegister uart register with status or control flags
+/// \param [in] flag checked register flag offset
+/// \retval true   tested flag is set
+/// \retval false  tested flag isn't set
+bool Uart_getFlag(const uint32_t uartRegister, const uint32_t flag);
+
+/// \brief Sets flag status in provided uart register.
+/// \param [in] uartRegister uart register with status or control flags
+/// \param [in] isSet flag value to be set
+/// \param [in] flag register flag offset
+void Uart_setFlag(volatile uint32_t *const uartRegister, const bool isSet, const uint32_t flag);
 
 #endif // BSP_UART_H
 
