@@ -33,7 +33,9 @@
 #define SCALER_VALUE 1
 #define RELOAD_VALUE 100
 
-static Timer_Apbctrl1 timer;
+static Timer_Apbctrl2 timer;
+
+static volatile bool isFinished;
 
 void sendMsg (const char *msg, int size)
 {
@@ -42,31 +44,44 @@ void sendMsg (const char *msg, int size)
   }
 }
 
+static inline void
+irqCallback(bool* arg)
+{
+    *arg = true;
+}
+
+static Timer_InterruptHandler irqHandler = {
+  .callback = (Timer_InterruptCallback)irqCallback,
+  .arg = &isFinished
+};
+
 bool
-test_Timer_polling(Timer_Apbctrl1* timer)
+test_Timer_interrupt(Timer_Apbctrl2* timer)
 {
     bool result = false;
+    isFinished = false;
 
     Timer_Config config;
     config.isEnabled = true;
     config.isAutoReloaded = false;
-    config.isInterruptEnabled = false;
+    config.isInterruptEnabled = true;
     config.isChained = false;
     config.reloadValue = RELOAD_VALUE;
-    Timer_Apbctrl1_init(Timer_Id_1, timer, defaultInterruptHandler);
-    Timer_Apbctrl1_setBaseScalerReloadValue(SCALER_VALUE);
-    Timer_Apbctrl1_setConfig(timer, &config);
-    Timer_Apbctrl1_start(timer);
+
+    Timer_Apbctrl2_init(Timer_Id_1, timer, irqHandler);
+    Timer_Apbctrl2_setBaseScalerReloadValue(SCALER_VALUE);
+    Timer_Apbctrl2_setConfig(timer, &config);
+    Timer_Apbctrl2_start(timer);
 
     int i = 0;
     while (i++ < TIMEOUT) {
-      if (Timer_Apbctrl1_hasFinished(timer)) {
+      if (isFinished) {
         result = true;
         break;
       }
     }
 
-    Timer_Apbctrl1_stop(timer);
+    Timer_Apbctrl2_stop(timer);
 
     if (result == true) {
       sendMsg("Success", SUCCESS_LENGTH);
@@ -79,7 +94,7 @@ rtems_task
 Init(rtems_task_argument arg)
 {
     (void)arg;
-    rtems_fatal(RTEMS_FATAL_SOURCE_EXIT, test_Timer_polling(&timer));
+    rtems_fatal(RTEMS_FATAL_SOURCE_EXIT, test_Timer_interrupt(&timer));
 }
 
 /** @} */

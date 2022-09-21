@@ -38,9 +38,9 @@
 #define GPTIMER_APBCTRL1_ADDRESS_BASE 0x80000300u
 #define GPTIMER_APBCTRL2_ADDRESS_BASE 0x80100600u
 
-#define FLAG_MASK 0x1
-#define FLAG_SET 0x1
-#define FLAG_RESET 0x00
+#define TIMER_FLAG_MASK 0x1
+#define TIMER_FLAG_SET 0x1
+#define TIMER_FLAG_RESET 0x0
 
 #define TIMER_UNDERFLOWED (uint32_t) (-1)
 
@@ -134,13 +134,12 @@ typedef volatile struct
     uint32_t latch;   ///< latch register
 } * Timer_Apbctrl2_Registers;
 
-typedef void (*Timer_InterruptCallback)(void* arg);
+typedef void (*Timer_InterruptCallback)(volatile void* arg);
 
 typedef struct
 {
-    rtems_interrupt_entry rtemsInterruptEntry; ///< RTEMS interrupt entry
     Timer_InterruptCallback callback;
-    void* arg; 
+    volatile void* arg; 
 } Timer_InterruptHandler;
 
 /// \brief Timer device identifiers.
@@ -170,6 +169,7 @@ typedef struct
     Timer_Id id;                   ///< Timer device id
     Timer_Apbctrl1_Registers regs; ///< Hardware timer registers
     Timer_InterruptHandler irqHandler;
+    rtems_interrupt_entry rtemsInterruptEntry; ///< RTEMS interrupt entry
 } Timer_Apbctrl1;
 
 /// \brief Timer device descriptor.
@@ -178,6 +178,7 @@ typedef struct
     Timer_Id id;                   ///< Timer device id
     Timer_Apbctrl2_Registers regs; ///< Hardware timer registers
     Timer_InterruptHandler irqHandler;
+    rtems_interrupt_entry rtemsInterruptEntry; ///< RTEMS interrupt entry
 } Timer_Apbctrl2;
 
 #endif // BSP_TIMERREGS_H

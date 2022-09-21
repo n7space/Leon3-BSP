@@ -37,15 +37,7 @@
 #include <stdint.h>
 #include "TimerTypedefs.h"
 
-static inline void
-emptyCallback(void* arg)
-{
-    (void)arg;
-}
-
-static Timer_InterruptHandler defaultInterruptHandler = {
-    .callback = emptyCallback,
-    .arg = 0 };
+extern Timer_InterruptHandler defaultInterruptHandler;
 
 void Timer_baseInit(volatile uint32_t *const baseConfigurationRegister);
 /// \brief Configures an Timer device based on a configuration descriptor.
@@ -59,7 +51,6 @@ void Timer_getConfig(const uint32_t timerControlRegister, const uint32_t timerRe
 /// \brief Performs a hardware startup procedure of Timer device.
 /// \param [in] timer Timer device descriptor.
 void Timer_start(volatile uint32_t *const timerControlRegister);
-void Timer_restart(volatile uint32_t *const timerControlRegister);
 /// \brief Performs a hardware shutdown procedure of Timer device.
 /// \param [in] timer Timer device descriptor.
 void Timer_stop(volatile uint32_t *const timerControlRegister);
@@ -67,7 +58,9 @@ void Timer_stop(volatile uint32_t *const timerControlRegister);
 /// \param [in] timer Pointer to a structure representing Timer.
 /// \returns Whether the counter has counted to 0.
 bool Timer_hasFinished(const uint32_t timerControlRegister, const uint32_t timerCounterRegister);
-void irqInit(Timer_InterruptHandler *handler, const uint8_t irqNumber);
+void irqInit(rtems_interrupt_entry *entry, Timer_InterruptHandler *handler, const uint8_t irqNumber);
+
+void Timer_handleIrq(Timer_InterruptHandler* const handler);
 
 /// \brief Intiializes a device descriptor for Timer.
 /// \param [in] id Timer device identifier.
@@ -80,9 +73,6 @@ void Timer_Apbctrl1_setBaseScalerReloadValue(uint16_t scalerReloadValue);
 void Timer_Apbctrl1_setConfig(Timer_Apbctrl1 *const timer, const Timer_Config *const config);
 void Timer_Apbctrl1_getConfig(const Timer_Apbctrl1 *const timer, Timer_Config *const config);
 void Timer_Apbctrl1_start(Timer_Apbctrl1 *const timer);
-/// \brief Clears the current Timer counter value.
-/// \param [in] timer Pointer to a structure representing Timer.
-void Timer_Apbctrl1_restart(Timer_Apbctrl1 *const timer);
 void Timer_Apbctrl1_stop(Timer_Apbctrl1 *const timer);
 /// \brief Returns the current Timer counter value.
 /// \param [in] timer Pointer to a structure representing Timer.
@@ -91,14 +81,13 @@ uint32_t Timer_Apbctrl1_getCounterValue(const Timer_Apbctrl1 *const timer);
 bool Timer_Apbctrl1_hasFinished(const Timer_Apbctrl1 *const timer);
 Timer_Apbctrl1_Interrupt Timer_getApbctrl1InterruptNumber(Timer_Id id);
 
-void Timer_Apbctrl2_init(Timer_Id id, Timer_Apbctrl2 *const timer);
+void Timer_Apbctrl2_init(Timer_Id id, Timer_Apbctrl2 *const timer, const Timer_InterruptHandler handler);
 /// \brief Sets Apbctrl2 base scaler value for all timers relative to systick
 /// \param [in] scaler Reload register value (minimum 5)
 void Timer_Apbctrl2_setBaseScalerReloadValue(uint8_t scalerReloadValue);
 void Timer_Apbctrl2_setConfig(Timer_Apbctrl2 *const timer, const Timer_Config *const config);
 void Timer_Apbctrl2_getConfig(const Timer_Apbctrl2 *const timer, Timer_Config *const config);
 void Timer_Apbctrl2_start(Timer_Apbctrl2 *const timer);
-void Timer_Apbctrl2_restart(Timer_Apbctrl2 *const timer);
 void Timer_Apbctrl2_stop(Timer_Apbctrl2 *const timer);
 uint32_t Timer_Apbctrl2_getCounterValue(const Timer_Apbctrl2 *const timer);
 bool Timer_Apbctrl2_hasFinished(const Timer_Apbctrl2 *const timer);
