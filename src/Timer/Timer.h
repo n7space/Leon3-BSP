@@ -59,6 +59,7 @@ void Timer_stop(volatile uint32_t *const timerControlRegister);
 /// \returns Whether the counter has counted to 0.
 bool Timer_hasFinished(const uint32_t timerControlRegister, const uint32_t timerCounterRegister);
 void irqInit(rtems_interrupt_entry *entry, Timer_InterruptHandler *handler, const uint8_t irqNumber);
+void irqDeinit(rtems_interrupt_entry *entry, const uint8_t irqNumber);
 
 void Timer_handleIrq(Timer_InterruptHandler* const handler);
 

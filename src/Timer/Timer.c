@@ -100,6 +100,13 @@ irqInit(rtems_interrupt_entry *entry, Timer_InterruptHandler *handler, const uin
     rtems_interrupt_vector_enable(irqNumber);
 }
 
+void
+irqDeinit(rtems_interrupt_entry *entry, const uint8_t irqNumber)
+{
+    rtems_interrupt_vector_disable(irqNumber);
+    rtems_interrupt_entry_remove(irqNumber, &entry);
+}
+
 void Timer_handleIrq(Timer_InterruptHandler* const handler)
 {
     handler->callback(handler->arg);
@@ -185,6 +192,7 @@ Timer_Apbctrl1_stop(Timer_Apbctrl1 *const timer)
 {
     rtems_interrupt_vector_disable(Timer_getApbctrl1InterruptNumber(timer->id));
     Timer_stop (&timer->regs->control);
+    irqDeinit(&timer->rtemsInterruptEntry, Timer_getApbctrl1InterruptNumber(timer->id));
 }
 
 uint32_t
@@ -306,6 +314,7 @@ Timer_Apbctrl2_stop(Timer_Apbctrl2 *const timer)
 {
     rtems_interrupt_vector_disable(Timer_getApbctrl2InterruptNumber(timer->id));
     Timer_stop (&timer->regs->control);
+    irqDeinit(&timer->rtemsInterruptEntry, Timer_getApbctrl2InterruptNumber(timer->id));
 }
 
 uint32_t
