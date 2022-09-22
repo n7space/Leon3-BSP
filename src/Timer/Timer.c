@@ -71,7 +71,6 @@ Timer_start(volatile uint32_t *const timerControlRegister)
 void
 Timer_stop(volatile uint32_t *const timerControlRegister)
 {
-    Timer_setFlag (timerControlRegister, TIMER_FLAG_RESET, TIMER_CONTROL_IE);
     Timer_setFlag (timerControlRegister, TIMER_FLAG_RESET, TIMER_CONTROL_EN);
 }
 
@@ -134,8 +133,13 @@ getApbctrl1TimerAddressById(Timer_Id id)
 void
 Timer_Apbctrl1_init(Timer_Id id, Timer_Apbctrl1 *const timer, const Timer_InterruptHandler handler)
 {
+#ifdef MOCK_REGISTERS
+    baseApbctrl1Registers = malloc(sizeof(Timer_Apbctrl1_Base_Registers));
+    timer->regs = malloc(sizeof(Timer_Apbctrl1_Registers));
+#else
     baseApbctrl1Registers = (Timer_Apbctrl1_Base_Registers) GPTIMER_APBCTRL1_ADDRESS_BASE;
     timer->regs = getApbctrl1TimerAddressById (id);
+#endif
     Timer_baseInit (&baseApbctrl1Registers->configuration);
     timer->id = id;
     timer->irqHandler = handler;
@@ -250,8 +254,13 @@ getApbctrl2TimerAddressById(Timer_Id id)
 void
 Timer_Apbctrl2_init(Timer_Id id, Timer_Apbctrl2 *const timer, const Timer_InterruptHandler handler)
 {
+#ifdef MOCK_REGISTERS
+    baseApbctrl2Registers = malloc(sizeof(Timer_Apbctrl2_Base_Registers));
+    timer->regs = malloc(sizeof(Timer_Apbctrl2_Registers));
+#else
     baseApbctrl2Registers = (Timer_Apbctrl2_Base_Registers) GPTIMER_APBCTRL2_ADDRESS_BASE;
     timer->regs = getApbctrl2TimerAddressById (id);
+#endif
     Timer_baseInit (&baseApbctrl2Registers->configuration);
     timer->id = id;
     timer->irqHandler = handler;
