@@ -82,6 +82,7 @@ test_Timer_interrupt(Timer_Apbctrl2* timer)
     }
 
     Timer_Apbctrl2_stop(timer);
+    Timer_Apbctrl2_shutdown(timer);
 
     if (result == true) {
       sendMsg("Success", SUCCESS_LENGTH);

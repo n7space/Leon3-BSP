@@ -1,24 +1,21 @@
 /**@file
- * This file is part of the TASTE Leon3 BSP for the Test Environment.
+ * This file is part of the Leon3 BSP for the Test Environment.
  *
  * @copyright 2022 N7 Space Sp. z o.o.
  *
- * Test Environment was developed under a programme of,
- * and funded by, the European Space Agency (the "ESA").
+ * Leon3 BSP for the Test Environment is free software: you can redistribute 
+ * it and/or modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of the License,
+ * or (at your option) any later version.
  *
+ * Leon3 BSP for the Test Environment is distributed in the hope
+ * that it will be useful, but WITHOUT ANY WARRANTY; without even
+ * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
  *
- * Licensed under the ESA Public License (ESA-PL) Permissive,
- * Version 2.3 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     https://essr.esa.int/license/list
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * You should have received a copy of the GNU General Public License
+ * along with Leon3 BSP for the Test Environment. If not,
+ * see <http://www.gnu.org/licenses/>.
  */
 
 /// \brief Timer hardware driver register addresses and datatypes.
@@ -62,7 +59,7 @@ typedef enum
     TimerInvalid_Apbctrl2_Address = 0xFFFFFFFFu ///< Invalid value
 } Timer_Apbctrl2_Address;
 
-/// \brief Enum representing Timer interrupt vector numbers.
+/// \brief Enum representing Apbctrl1 Timer interrupt vector numbers.
 typedef enum
 {
     Timer_Apbctrl1_Interrupt_1 = 8,          ///< Timer 1 IRQ
@@ -72,22 +69,23 @@ typedef enum
     Timer_Apbctrl1_Interrupt_Invalid = 0xFFu ///< Invalid value
 } Timer_Apbctrl1_Interrupt;
 
+/// \brief Enum representing Apbctrl2 Timer interrupt vector numbers.
 typedef enum
 {
-    Timer_Apbctrl2_Interrupt_1 = 7,            ///< Timer IRQ
+    Timer_Apbctrl2_Interrupt_1 = 7,          ///< Timer IRQ
     Timer_Apbctrl2_Interrupt_Invalid = 0xFFu ///< Invalid value
 } Timer_Apbctrl2_Interrupt;
 
 /// \brief Enum representing Timer control register flags.
 typedef enum
 {
-    TIMER_CONTROL_EN = 0,  ///< Enable the timer
-    TIMER_CONTROL_RS,      ///< Restart
-    TIMER_CONTROL_LD,      ///< Load value from reload register to counter
-    TIMER_CONTROL_IE,      ///< Interrupt Enable
-    TIMER_CONTROL_IP,      ///< Interrupt Pending
-    TIMER_CONTROL_CH,      ///< Chain with preceding time
-    TIMER_CONTROL_DH       ///< Debug Halt
+    TIMER_CONTROL_EN = 0, ///< Enable the timer
+    TIMER_CONTROL_RS,     ///< Restart
+    TIMER_CONTROL_LD,     ///< Load value from reload register to counter
+    TIMER_CONTROL_IE,     ///< Interrupt Enable
+    TIMER_CONTROL_IP,     ///< Interrupt Pending
+    TIMER_CONTROL_CH,     ///< Chain with preceding time
+    TIMER_CONTROL_DH      ///< Debug Halt
 } Timer_Control_Register_Flags;
 
 /// \brief Enum representing config register TIMER flags.
@@ -100,7 +98,7 @@ typedef enum
     TIMER_CONFIG_EL = 11     ///< Enable latching
 } Timer_Config_Register_Flags;
 
-/// \brief Structure representing global scaler and configuration registers for Apbctrl1 timers
+/// \brief Structure representing global scaler and configuration registers for Apbctrl1 timers.
 typedef volatile struct
 {
     uint32_t scaler;        ///< scaler value register
@@ -108,7 +106,7 @@ typedef volatile struct
     uint32_t configuration; ///< configuration register
 } * Timer_Apbctrl1_Base_Registers;
 
-/// \brief Structure representing global scaler and configuration registers for Apbctrl2 timers
+/// \brief Structure representing global scaler and configuration registers for Apbctrl2 timers.
 typedef volatile struct
 {
     uint32_t scaler;             ///< scaler value register
@@ -134,12 +132,14 @@ typedef volatile struct
     uint32_t latch;   ///< latch register
 } * Timer_Apbctrl2_Registers;
 
+/// \brief Timer function callback for interrupt usage.
 typedef void (*Timer_InterruptCallback)(volatile void* arg);
 
+/// \brief Structure representing Timer interrupt handler.
 typedef struct
 {
-    Timer_InterruptCallback callback;
-    volatile void* arg; 
+    Timer_InterruptCallback callback; ///< Interupt callback
+    volatile void* arg;               ///< Interrupt callback parameter
 } Timer_InterruptHandler;
 
 /// \brief Timer device identifiers.
@@ -163,21 +163,21 @@ typedef struct
     uint32_t reloadValue;    ///< Reload value
 } Timer_Config;
 
-/// \brief Timer device descriptor.
+/// \brief Apbctrl1 timer device descriptor.
 typedef struct
 {
-    Timer_Id id;                   ///< Timer device id
-    Timer_Apbctrl1_Registers regs; ///< Hardware timer registers
-    Timer_InterruptHandler irqHandler;
+    Timer_Id id;                               ///< Timer device id
+    Timer_Apbctrl1_Registers regs;             ///< Hardware timer registers
+    Timer_InterruptHandler irqHandler;         ///< Timer interrupt handler
     rtems_interrupt_entry rtemsInterruptEntry; ///< RTEMS interrupt entry
 } Timer_Apbctrl1;
 
-/// \brief Timer device descriptor.
+/// \brief Apbctrl2 timer device descriptor.
 typedef struct
 {
-    Timer_Id id;                   ///< Timer device id
-    Timer_Apbctrl2_Registers regs; ///< Hardware timer registers
-    Timer_InterruptHandler irqHandler;
+    Timer_Id id;                               ///< Timer device id
+    Timer_Apbctrl2_Registers regs;             ///< Hardware timer registers
+    Timer_InterruptHandler irqHandler;         ///< Timer interrupt handler
     rtems_interrupt_entry rtemsInterruptEntry; ///< RTEMS interrupt entry
 } Timer_Apbctrl2;
 

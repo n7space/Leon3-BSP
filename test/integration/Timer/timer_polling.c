@@ -67,6 +67,7 @@ test_Timer_polling(Timer_Apbctrl1* timer)
     }
 
     Timer_Apbctrl1_stop(timer);
+    Timer_Apbctrl1_shutdown(timer);
 
     if (result == true) {
       sendMsg("Success", SUCCESS_LENGTH);
