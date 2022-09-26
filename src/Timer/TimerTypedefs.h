@@ -167,6 +167,7 @@ typedef struct
 typedef struct
 {
     Timer_Id id;                               ///< Timer device id
+    Timer_Apbctrl1_Base_Registers base;        ///< Apbctrl1 timer control and scaler registers structure pointer.
     Timer_Apbctrl1_Registers regs;             ///< Hardware timer registers
     Timer_InterruptHandler irqHandler;         ///< Timer interrupt handler
     rtems_interrupt_entry rtemsInterruptEntry; ///< RTEMS interrupt entry
@@ -176,6 +177,7 @@ typedef struct
 typedef struct
 {
     Timer_Id id;                               ///< Timer device id
+    Timer_Apbctrl2_Base_Registers base;        ///< Apbctrl2 timer control and scaler registers structure pointer.
     Timer_Apbctrl2_Registers regs;             ///< Hardware timer registers
     Timer_InterruptHandler irqHandler;         ///< Timer interrupt handler
     rtems_interrupt_entry rtemsInterruptEntry; ///< RTEMS interrupt entry

@@ -69,8 +69,8 @@ test_Timer_interrupt(Timer_Apbctrl2* timer)
     config.reloadValue = RELOAD_VALUE;
 
     Timer_Apbctrl2_init(Timer_Id_1, timer, irqHandler);
-    Timer_Apbctrl2_setBaseScalerReloadValue(SCALER_VALUE);
-    Timer_Apbctrl2_setConfig(timer, &config);
+    Timer_Apbctrl2_setBaseScalerReloadValue(timer, SCALER_VALUE);
+    Timer_Apbctrl2_setConfigRegisters(timer, &config);
     Timer_Apbctrl2_start(timer);
 
     int i = 0;

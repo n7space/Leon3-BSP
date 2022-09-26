@@ -57,6 +57,3 @@ dkms.conf
 
 # Build
 build/*
-
-# Tsim
-tsim-leon3

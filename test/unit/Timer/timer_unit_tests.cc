@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 extern "C" {
+#include "Timer_private.h"
 #include "Timer.h"
 }
 
@@ -63,7 +64,7 @@ TEST(TimerTests, Timer_baseInit_shouldInitTimerBaseRegister)
     CHECK_FALSE(Timer_getFlag(baseConfigurationRegister, TIMER_CONFIG_EL));
 }
 
-TEST(TimerTests, Timer_setConfig_shouldSetProperFlagsInTimerRegistersFromTheGivenConfig)
+TEST(TimerTests, Timer_setConfigRegisters_shouldSetProperFlagsInTimerRegistersFromTheGivenConfig)
 {
     uint32_t testControlRegister = 0;
     uint32_t testReloadRegister = 0;
@@ -77,19 +78,19 @@ TEST(TimerTests, Timer_setConfig_shouldSetProperFlagsInTimerRegistersFromTheGive
         .reloadValue = expectedReloadValue
     };
 
-    Timer_setConfig(&testControlRegister, &testReloadRegister, &testConfig);
+    Timer_setConfigRegisters(&testControlRegister, &testReloadRegister, &testConfig);
 
     CHECK_EQUAL(expectedControlValue, testControlRegister);
     CHECK_EQUAL(expectedReloadValue, testReloadRegister);
 }
 
-TEST(TimerTests, Timer_getConfig_shouldReturnProperConfigFromTheTimerRegisters)
+TEST(TimerTests, Timer_getConfigRegisters_shouldReturnProperConfigFromTheTimerRegisters)
 {
     uint32_t testControlRegister = 0x23; // EN, RS, CH 
     uint32_t testReloadRegister = 15;
     Timer_Config testConfig;
 
-    Timer_getConfig(testControlRegister, testReloadRegister, &testConfig);
+    Timer_getConfigRegisters(testControlRegister, testReloadRegister, &testConfig);
 
     CHECK_TRUE(testConfig.isEnabled);
     CHECK_TRUE(testConfig.isAutoReloaded);

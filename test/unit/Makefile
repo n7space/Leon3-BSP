@@ -52,7 +52,7 @@ libuart: librtems_mock $(UART_OBJECTS)
 	$(HOST_AR) -crsv $(UART_TEST_LIB_BUILD_DIR)/$@.a $(UART_TEST_LIB_BUILD_DIR)/$(notdir $(UART_OBJECTS))
 
 libtimer: librtems_mock $(TIMER_OBJECTS)
-	$(HOST_AR) -crsv $(TIMER_TEST_LIB_BUILD_DIR)/$@.a $(TIMER_TEST_LIB_BUILD_DIR)/$(notdir $(TIMER_OBJECTS))
+	$(HOST_AR) -crsv $(TIMER_TEST_LIB_BUILD_DIR)/$@.a $(patsubst %.o,$(TIMER_TEST_LIB_BUILD_DIR)/%.o, $(notdir $(TIMER_OBJECTS)))
 
 librtems_mock: $(RTEMS_OBJECTS)
 	$(HOST_AR) -crsv $(RTEMS_MOCK_LIB_BUILD_DIR)/$@.a $(RTEMS_MOCK_LIB_BUILD_DIR)/$(notdir $(RTEMS_OBJECTS))

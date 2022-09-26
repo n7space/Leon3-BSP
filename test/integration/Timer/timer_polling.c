@@ -30,8 +30,8 @@
 
 #define TIMEOUT 100000
 #define SUCCESS_LENGTH 7
-#define SCALER_VALUE 1
-#define RELOAD_VALUE 100
+#define SCALER_VALUE 10
+#define RELOAD_VALUE 1000
 
 static Timer_Apbctrl1 timer;
 
@@ -54,16 +54,24 @@ test_Timer_polling(Timer_Apbctrl1* timer)
     config.isChained = false;
     config.reloadValue = RELOAD_VALUE;
     Timer_Apbctrl1_init(Timer_Id_1, timer, defaultInterruptHandler);
-    Timer_Apbctrl1_setBaseScalerReloadValue(SCALER_VALUE);
-    Timer_Apbctrl1_setConfig(timer, &config);
+    Timer_Apbctrl1_setBaseScalerReloadValue(timer, SCALER_VALUE);
+    Timer_Apbctrl1_setConfigRegisters(timer, &config);
     Timer_Apbctrl1_start(timer);
 
     int i = 0;
+    uint32_t counterOldValue = Timer_Apbctrl1_getCounterValue(timer);
+    uint32_t counterActualValue = 0;
     while (i++ < TIMEOUT) {
       if (Timer_Apbctrl1_hasFinished(timer)) {
         result = true;
         break;
       }
+
+      counterActualValue = Timer_Apbctrl1_getCounterValue(timer);
+      if (counterActualValue == counterOldValue) {
+        break;
+      }
+      counterOldValue = counterActualValue;
     }
 
     Timer_Apbctrl1_stop(timer);
