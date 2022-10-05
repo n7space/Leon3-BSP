@@ -2,6 +2,10 @@
  * This file is part of the Leon3 BSP for the Test Environment.
  *
  * @copyright 2022 N7 Space Sp. z o.o.
+ * 
+ * Leon3 BSP for the Test Environment was developed under the project AURORA.
+ * This project has received funding from the European Union’s Horizon 2020
+ * research and innovation programme under grant agreement No 101004291”
  *
  * Leon3 BSP for the Test Environment is free software: you can redistribute 
  * it and/or modify it under the terms of the GNU General Public License as
@@ -17,6 +21,7 @@
  * along with Leon3 BSP for the Test Environment. If not,
  * see <http://www.gnu.org/licenses/>.
  */
+
 /// \brief Uart hardware driver implementation.
 
 #include <stdbool.h>
