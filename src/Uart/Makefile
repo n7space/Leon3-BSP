@@ -7,7 +7,7 @@ UART_LIB_BUILD_DIR = $(ROOT_PATH)/$(BUILD_DIR)/$(SRC_DIR)/$(UART_SRC_DIR)
 CFLAGS = -g $(DEPFLAGS) $(WARNFLAGS) $(ABI_FLAGS) $(OPTFLAGS) -DRTEMS_API_$(RTEMS_API) -DRTEMS_SIS
 
 SRC = $(wildcard ./*.c)
-INCL = $(addprefix -I,$(sort $(dir $(wildcard ./*.h) $(wildcard ./../Utils/*.h) $(wildcard ./../SystemConfig/*.h))))
+INCL = $(addprefix -I,$(sort $(dir $(wildcard ./*.h) $(wildcard ./../Utils/*.h))))
 OBJECTS = $(patsubst %.c,$(UART_LIB_BUILD_DIR)/%.o, $(SRC))
 
 all: libuart

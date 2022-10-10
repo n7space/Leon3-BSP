@@ -28,7 +28,6 @@
 #include "Uart.h"
 #include "UartRegisters.h"
 #include "ByteFifo.h"
-#include "SystemConfig.h"
 #include <rtems.h>
 
 #define GPTIMER_ADDRESS_BASE 0x80000300U
