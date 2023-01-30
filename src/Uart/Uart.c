@@ -53,6 +53,38 @@ getAddressBase(Uart_Id id)
     }
 }
 
+static inline bool
+setBaudRate(const Uart* const uart, const Uart_BaudRate baud)
+{
+    uint32_t baudValue = 0;
+    switch(baud) {
+        case 300:
+        case 600:
+        case 1200:
+        case 1800:
+        case 2400:
+        case 4800:
+        case 9600:
+        case 19200:
+        case 28800:
+        case 38400:
+        case 57600:
+        case 76800:
+        case 115200:
+            baudValue = (uint32_t) baud;
+            break;
+        default:
+            return false;
+    }
+
+    uint32_t freq = rtems_clock_get_ticks_per_second();
+    uint16_t scaler = freq / (baudValue * 8) - 1;
+
+    uart->reg->clkscl = (scaler << UART_SCALER_RELOAD_OFFSET) & UART_SCALER_RELOAD_MASK;
+
+    return true;
+}
+
 static inline Uart_BaudRate
 getBaudRate(const Uart* const uart)
 {
@@ -130,6 +162,8 @@ Uart_setConfig(Uart* const uart, const Uart_Config* const config)
     Uart_setFlag(&uart->reg->control, config->isTxEnabled, UART_CONTROL_TI);
     Uart_setFlag(&uart->reg->control, !config->isTxEnabled, UART_CONTROL_TF);
     Uart_setFlag(&uart->reg->control, config->isLoopbackModeEnabled, UART_CONTROL_LB);
+
+    setBaudRate(uart, config->baudRate);
 
     if (config->parity != Uart_Parity_None && config->parity != Uart_Parity_Invalid) {
         Uart_setFlag(&uart->reg->control, UART_FLAG_SET, UART_CONTROL_PE);

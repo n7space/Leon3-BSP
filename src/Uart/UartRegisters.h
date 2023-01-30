@@ -108,6 +108,9 @@ typedef enum { UART_CONTROL_RE = 0,  // Receiver enable: If set, enables the rec
 #define UART_CLKSCL_DIV     8u          // Clock divider value for baud rate generation
 #define UART_CLKSCL_SHIFT   4u          // Byte shift to convert 12-bit clkscl register value to 16-bit
 
+#define UART_SCALER_RELOAD_MASK     0X00000FFF
+#define UART_SCALER_RELOAD_OFFSET   0
+
 #define UART_FIFO_OFFSET    0x10u
 
 #define UART_FLAG_SET 0x01u
