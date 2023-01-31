@@ -53,11 +53,33 @@ getAddressBase(Uart_Id id)
     }
 }
 
-static inline bool
-setBaudRate(const Uart* const uart, const Uart_BaudRate baud)
+static inline uint32_t
+baudRateToValue(const Uart_BaudRate baud)
 {
-    uint32_t baudValue = 0;
     switch(baud) {
+        case Uart_BaudRate_300:
+        case Uart_BaudRate_600:
+        case Uart_BaudRate_1200:
+        case Uart_BaudRate_1800:
+        case Uart_BaudRate_2400:
+        case Uart_BaudRate_4800:
+        case Uart_BaudRate_9600:
+        case Uart_BaudRate_19200:
+        case Uart_BaudRate_28800:
+        case Uart_BaudRate_38400:
+        case Uart_BaudRate_57600:
+        case Uart_BaudRate_76800:
+        case Uart_BaudRate_115200:
+            return (uint32_t) baud;
+        default:
+            return 0;
+    }
+}
+
+static inline Uart_BaudRate
+valueToBaudRate(const uint32_t value)
+{
+    switch(value) {
         case 300:
         case 600:
         case 1200:
@@ -71,15 +93,26 @@ setBaudRate(const Uart* const uart, const Uart_BaudRate baud)
         case 57600:
         case 76800:
         case 115200:
-            baudValue = (uint32_t) baud;
+            return (Uart_BaudRate) value;
             break;
         default:
-            return false;
+            return Uart_BaudRate_Invalid;
+    }
+}
+
+static inline bool
+setBaudRate(const Uart* const uart, const Uart_BaudRate baud)
+{
+    uint32_t baudValue = baudRateToValue(baud);
+
+    if (baudValue == 0) {
+        return false;
     }
 
     uint32_t freq = rtems_clock_get_ticks_per_second();
     uint16_t scaler = freq / (baudValue * 8) - 1;
 
+    // Taken from GR712RC User Manual, 15.3
     uart->reg->clkscl = (scaler << UART_SCALER_RELOAD_OFFSET) & UART_SCALER_RELOAD_MASK;
 
     return true;
@@ -91,25 +124,7 @@ getBaudRate(const Uart* const uart)
     uint32_t freq = rtems_clock_get_ticks_per_second();
     uint16_t clkscl = (uart->reg->clkscl << UART_CLKSCL_SHIFT) + 1;
     uint32_t baud = freq / (UART_CLKSCL_DIV * clkscl);
-    switch(baud) {
-        case 300:
-        case 600:
-        case 1200:
-        case 1800:
-        case 2400:
-        case 4800:
-        case 9600:
-        case 19200:
-        case 28800:
-        case 38400:
-        case 57600:
-        case 76800:
-        case 115200:
-            return (Uart_BaudRate) baud;
-            break;
-        default:
-            return Uart_BaudRate_Invalid;
-    }
+    return valueToBaudRate(baud);
 }
 
 static inline Uart_interrupt
